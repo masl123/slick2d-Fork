@@ -52,7 +52,8 @@
     <property file="src/version" prefix="version"/>
     
 	<delete dir="lib/slick.jar"/>
-	<javac includes="org/newdawn/slick/**" debug="true" srcdir="src" destdir="${build.dir}/classes" target="1.4" source="1.4">
+	<javac includes="org/newdawn/slick/**" debug="true" srcdir="src" destdir="${build.dir}/classes" target="1.6"
+           source="1.6">
 	    <classpath>
 	      <pathelement path="lib/lwjgl.jar"/>
 	      <pathelement path="lib/lwjgl_util_applet.jar"/>

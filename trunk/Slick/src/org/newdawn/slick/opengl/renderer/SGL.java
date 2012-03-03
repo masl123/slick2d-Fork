@@ -24,6 +24,10 @@ public interface SGL {
 	public static final int GL_RGBA = GL11.GL_RGBA;
 	/** OpenGL Enum - @url http://www.opengl.org/documentation */
 	public static final int GL_RGB = GL11.GL_RGB;
+    /** OpenGL Enum - @url http://www.opengl.org/documentation */
+    public static final int GL_LUMINANCE = GL11.GL_LUMINANCE;
+    /** OpenGL Enum - @url http://www.opengl.org/documentation */
+    public static final int GL_LUMINANCE_ALPHA = GL11.GL_LUMINANCE_ALPHA;
 	/** OpenGL Enum - @url http://www.opengl.org/documentation */
 	public static final int GL_UNSIGNED_BYTE = GL11.GL_UNSIGNED_BYTE;
 	/** OpenGL Enum - @url http://www.opengl.org/documentation */

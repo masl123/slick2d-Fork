@@ -105,17 +105,13 @@ public class BufferedImageUtil {
 		texture.setWidth(bufferedImage.getWidth());
 		texture.setHeight(bufferedImage.getHeight());
 
-		if (bufferedImage.getColorModel().hasAlpha()) {
-			srcPixelFormat = SGL.GL_RGBA;
-		} else {
-			srcPixelFormat = SGL.GL_RGB;
-		}
+		srcPixelFormat = data.getFormat().getOGLType();
 
 		// convert that image into a byte buffer of texture data
 		ByteBuffer textureBuffer = data.imageToByteBuffer(bufferedImage, false, false, null);
 		texture.setTextureHeight(data.getTexHeight());
 		texture.setTextureWidth(data.getTexWidth());
-		texture.setAlpha(data.getDepth() == 32);
+		texture.setAlpha(data.getFormat().hasAlpha());
 		
 		if (target == SGL.GL_TEXTURE_2D) {
 			Renderer.get().glTexParameteri(target, SGL.GL_TEXTURE_MIN_FILTER, minFilter);

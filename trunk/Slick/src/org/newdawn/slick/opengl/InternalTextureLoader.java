@@ -301,11 +301,11 @@ public class InternalTextureLoader {
         int texWidth;
         int texHeight;
         
-        boolean hasAlpha;
+        ImageData.Format format;
         
     	width = imageData.getWidth();
     	height = imageData.getHeight();
-    	hasAlpha = imageData.getDepth() == 32;
+    	format = imageData.getFormat();
     	
     	texture.setTextureWidth(imageData.getTexWidth());
     	texture.setTextureHeight(imageData.getTexHeight());
@@ -320,19 +320,19 @@ public class InternalTextureLoader {
         	throw new IOException("Attempt to allocate a texture to big for the current hardware");
         }
         
-        int srcPixelFormat = hasAlpha ? SGL.GL_RGBA : SGL.GL_RGB;
-        int componentCount = hasAlpha ? 4 : 3;
+        int srcPixelFormat = format.getOGLType();
+        int componentCount = format.getColorComponents();
         
         texture.setWidth(width);
         texture.setHeight(height);
-        texture.setAlpha(hasAlpha);
+        texture.setAlpha(format.hasAlpha());
 
         if (holdTextureData) {
         	texture.setTextureData(srcPixelFormat, componentCount, minFilter, magFilter, textureBuffer);
         }
         
-        GL.glTexParameteri(target, GL.GL_TEXTURE_MIN_FILTER, minFilter); 
-        GL.glTexParameteri(target, GL.GL_TEXTURE_MAG_FILTER, magFilter); 
+        GL.glTexParameteri(target, SGL.GL_TEXTURE_MIN_FILTER, minFilter); 
+        GL.glTexParameteri(target, SGL.GL_TEXTURE_MAG_FILTER, magFilter); 
         
         // produce a texture from the byte buffer
         GL.glTexImage2D(target, 
@@ -405,11 +405,11 @@ public class InternalTextureLoader {
         int texWidth;
         int texHeight;
         
-        boolean hasAlpha;
+        ImageData.Format format;
     	
     	width = dataSource.getWidth();
     	height = dataSource.getHeight();
-    	hasAlpha = dataSource.getDepth() == 32;
+    	format = dataSource.getFormat();
     	
     	texture.setTextureWidth(dataSource.getTexWidth());
     	texture.setTextureHeight(dataSource.getTexHeight());
@@ -417,12 +417,12 @@ public class InternalTextureLoader {
         texWidth = texture.getTextureWidth();
         texHeight = texture.getTextureHeight();
         
-        int srcPixelFormat = hasAlpha ? SGL.GL_RGBA : SGL.GL_RGB;
-        int componentCount = hasAlpha ? 4 : 3;
+        int srcPixelFormat = format.getOGLType();
+        int componentCount = format.getColorComponents();
         
         texture.setWidth(width);
         texture.setHeight(height);
-        texture.setAlpha(hasAlpha);
+        texture.setAlpha(format.hasAlpha());
         
         IntBuffer temp = BufferUtils.createIntBuffer(16);
         GL.glGetInteger(SGL.GL_MAX_TEXTURE_SIZE, temp);
