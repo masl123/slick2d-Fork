@@ -124,7 +124,7 @@ public class Image implements Renderable {
     /** The colours for each of the corners */
     protected Color[] corners;
     /** The OpenGL max filter */
-    private int filter = SGL.GL_LINEAR;
+    private int filter = FILTER_LINEAR;
     
     /** True if the image should be flipped vertically */
     private boolean flipped;
