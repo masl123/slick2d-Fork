@@ -97,8 +97,8 @@ public class Image implements Renderable {
 		this.textureOffsetX = other.textureOffsetX;
 		this.textureOffsetY = other.textureOffsetY;
 	
-		centerX = width / 2;
-		centerY = height / 2;
+		centerX = width / 2f;
+		centerY = height / 2f;
 		inited = true;
 	}
 	
@@ -508,8 +508,8 @@ public class Image implements Renderable {
 		
 		initImpl();
 	
-		centerX = width / 2;
-		centerY = height / 2;
+		centerX = width / 2f;
+		centerY = height / 2f;
 	}
 
 	/**
@@ -533,7 +533,7 @@ public class Image implements Renderable {
 	 * @param y The y coordinate to place the image's center at
 	 */
 	public void drawCentered(float x, float y) {
-		draw(x-(getWidth()/2),y-(getHeight()/2));
+		draw(x-(getWidth()/2f),y-(getHeight()/2f));
 	}
 	
 	/**
@@ -970,8 +970,8 @@ public class Image implements Renderable {
 		sub.width = width;
 		sub.height = height;
 		sub.ref = ref;
-		sub.centerX = width / 2;
-		sub.centerY = height / 2;
+		sub.centerX = width / 2f;
+		sub.centerY = height / 2f;
 		
 		return sub;
 	}
@@ -1219,8 +1219,8 @@ public class Image implements Renderable {
 		Image image = copy();
 		image.width = width;
 		image.height = height;
-		image.centerX = width / 2;
-		image.centerY = height / 2;
+		image.centerX = width / 2f;
+		image.centerY = height / 2f;
 		return image;
 	}
 	
