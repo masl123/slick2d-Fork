@@ -59,6 +59,9 @@ public class SoundTest extends BasicGame {
 		SoundStore.get().setMaxSources(32);
 		
 		myContainer = container;
+		//start music volume half way, for fun..
+		volume = 5;
+		setVolume();
 		sound = new Sound("testdata/restart.ogg");
 		charlie = new Sound("testdata/cbrown01.wav");
 		try {
