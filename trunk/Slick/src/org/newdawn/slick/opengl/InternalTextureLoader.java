@@ -325,7 +325,7 @@ public class InternalTextureLoader {
         
         texture.setWidth(width);
         texture.setHeight(height);
-        texture.setAlpha(format.hasAlpha());
+        texture.setImageFormat(format);
 
         if (holdTextureData) {
         	texture.setTextureData(srcPixelFormat, componentCount, minFilter, magFilter, textureBuffer);
@@ -422,7 +422,7 @@ public class InternalTextureLoader {
         
         texture.setWidth(width);
         texture.setHeight(height);
-        texture.setAlpha(format.hasAlpha());
+        texture.setImageFormat(format);
         
         IntBuffer temp = BufferUtils.createIntBuffer(16);
         GL.glGetInteger(SGL.GL_MAX_TEXTURE_SIZE, temp);
