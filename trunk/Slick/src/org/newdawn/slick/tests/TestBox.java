@@ -252,6 +252,7 @@ public class TestBox extends BasicGame {
 			box.addGame(GradientTest.class);
 			box.addGame(GraphicsTest.class);
 			box.addGame(ImageBufferTest.class);
+      box.addGame(ImageFormatTest.class);
 			box.addGame(ImageReadTest.class);
 			box.addGame(ImageTest.class);
 			box.addGame(KeyRepeatTest.class);
