@@ -6,7 +6,6 @@ import java.nio.FloatBuffer;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
-
 import org.lwjgl.BufferUtils;
 import org.newdawn.slick.geom.Rectangle;
 import org.newdawn.slick.geom.Shape;
@@ -19,8 +18,7 @@ import org.newdawn.slick.util.FastTrig;
 import org.newdawn.slick.util.Log;
 
 /**
- * A graphics context that can be used to render primatives to the accelerated
- * canvas provided by LWJGL.
+ * A graphics context that can be used to render primatives to the accelerated canvas provided by LWJGL.
  * 
  * @author kevin
  */
@@ -29,16 +27,16 @@ public class Graphics {
 	protected static SGL GL = Renderer.get();
 	/** The renderer to use line strips */
 	private static LineStripRenderer LSR = Renderer.getLineStripRenderer();
-
+	
 	/** The normal drawing mode */
 	public static int MODE_NORMAL = 1;
-
+	
 	/** Draw to the alpha map */
 	public static int MODE_ALPHA_MAP = 2;
-
+	
 	/** Draw using the alpha blending */
 	public static int MODE_ALPHA_BLEND = 3;
-
+	
 	/** Draw multiplying the source and destination colours */
 	public static int MODE_COLOR_MULTIPLY = 4;
 	
@@ -48,15 +46,21 @@ public class Graphics {
 	/** Draw blending the new image into the old one by a factor of it's colour */
 	public static int MODE_SCREEN = 6;
 	
+	/** Draw adding the existing colour to the new colour including alpha */
+	public static int MODE_ADD_ALPHA = 7;
+	
+	/** Draw multiplying the source and destination colours */
+	public static int MODE_COLOR_MULTIPLY_ALPHA = 8;
+	
 	/** The default number of segments that will be used when drawing an oval */
 	private static final int DEFAULT_SEGMENTS = 50;
-
+	
 	/** The last graphics context in use */
 	protected static Graphics currentGraphics = null;
 	
 	/** The default font to use */
 	protected static Font DEFAULT_FONT;
-
+	
 	/** The last set scale */
 	private float sx = 1;
 	/** The last set scale */
@@ -65,7 +69,8 @@ public class Graphics {
 	/**
 	 * Set the current graphics context in use
 	 * 
-	 * @param current The graphics context that should be considered current
+	 * @param current
+	 *            The graphics context that should be considered current
 	 */
 	public static void setCurrent(Graphics current) {
 		if (currentGraphics != current) {
@@ -79,54 +84,53 @@ public class Graphics {
 	
 	/** The font in use */
 	private Font font;
-
+	
 	/** The current color */
 	private Color currentColor = Color.white;
-
+	
 	/** The width of the screen */
 	protected int screenWidth;
-
+	
 	/** The height of the screen */
 	protected int screenHeight;
-
+	
 	/** True if the matrix has been pushed to the stack */
 	private boolean pushed;
-
+	
 	/** The graphics context clipping */
 	private Rectangle clip;
-
+	
 	/** Buffer used for setting the world clip */
 	private DoubleBuffer worldClip = BufferUtils.createDoubleBuffer(4);
-
+	
 	/** The buffer used to read a screen pixel */
 	private ByteBuffer readBuffer = BufferUtils.createByteBuffer(4);
-
+	
 	/** True if we're antialias */
 	private boolean antialias;
-
+	
 	/** The world clip recorded since last set */
 	private Rectangle worldClipRecord;
-
+	
 	/** The current drawing mode */
 	private int currentDrawingMode = MODE_NORMAL;
-
+	
 	/** The current line width */
 	private float lineWidth = 1;
-
+	
 	/** The matrix stack */
 	private ArrayList stack = new ArrayList();
 	/** The index into the stack we're using */
 	private int stackIndex;
-
+	
 	/**
 	 * Default constructor for sub-classes
 	 */
-	public Graphics() {	
+	public Graphics() {
 	}
 	
 	/**
-	 * Create a new graphics context. Only the container should be doing this
-	 * really
+	 * Create a new graphics context. Only the container should be doing this really
 	 * 
 	 * @param width
 	 *            The width of the screen for this context
@@ -138,9 +142,7 @@ public class Graphics {
 			AccessController.doPrivileged(new PrivilegedAction() {
 				public Object run() {
 					try {
-						DEFAULT_FONT = new AngelCodeFont(
-								"org/newdawn/slick/data/defaultfont.fnt",
-								"org/newdawn/slick/data/defaultfont.png");
+						DEFAULT_FONT = new AngelCodeFont("org/newdawn/slick/data/defaultfont.fnt", "org/newdawn/slick/data/defaultfont.png");
 					} catch (SlickException e) {
 						Log.error(e);
 					}
@@ -153,12 +155,14 @@ public class Graphics {
 		screenWidth = width;
 		screenHeight = height;
 	}
-
+	
 	/**
 	 * Set the dimensions considered by the graphics context
 	 * 
-	 * @param width The width of the graphics context
-	 * @param height The height of the graphics context
+	 * @param width
+	 *            The width of the graphics context
+	 * @param height
+	 *            The height of the graphics context
 	 */
 	void setDimensions(int width, int height) {
 		screenWidth = width;
@@ -166,11 +170,11 @@ public class Graphics {
 	}
 	
 	/**
-	 * Set the drawing mode to use. This mode defines how pixels are drawn to
-	 * the graphics context. It can be used to draw into the alpha map.
+	 * Set the drawing mode to use. This mode defines how pixels are drawn to the graphics context. It can be used to
+	 * draw into the alpha map.
 	 * 
-	 * The mode supplied should be one of {@link Graphics#MODE_NORMAL} or
-	 * {@link Graphics#MODE_ALPHA_MAP} or {@link Graphics#MODE_ALPHA_BLEND}
+	 * The mode supplied should be one of {@link Graphics#MODE_NORMAL} or {@link Graphics#MODE_ALPHA_MAP} or
+	 * {@link Graphics#MODE_ALPHA_BLEND}
 	 * 
 	 * @param mode
 	 *            The mode to apply.
@@ -207,13 +211,22 @@ public class Graphics {
 			GL.glColorMask(true, true, true, true);
 			GL.glBlendFunc(SGL.GL_ONE, SGL.GL_ONE_MINUS_SRC_COLOR);
 		}
+		if (currentDrawingMode == MODE_ADD_ALPHA) {
+			GL.glEnable(SGL.GL_BLEND);
+			GL.glColorMask(true, true, true, true);
+			GL.glBlendFunc(SGL.GL_SRC_ALPHA, SGL.GL_ONE);
+		}
+		if (currentDrawingMode == MODE_COLOR_MULTIPLY_ALPHA) {
+			GL.glEnable(SGL.GL_BLEND);
+			GL.glColorMask(true, true, true, true);
+			GL.glBlendFunc(SGL.GL_ONE_MINUS_SRC_COLOR, SGL.GL_ONE_MINUS_SRC_ALPHA);
+		}
 		postdraw();
 	}
-
+	
 	/**
-	 * Clear the state of the alpha map across the entire screen. This sets
-	 * alpha to 0 everywhere, meaning in {@link Graphics#MODE_ALPHA_BLEND}
-	 * nothing will be drawn.
+	 * Clear the state of the alpha map across the entire screen. This sets alpha to 0 everywhere, meaning in
+	 * {@link Graphics#MODE_ALPHA_BLEND} nothing will be drawn.
 	 */
 	public void clearAlphaMap() {
 		pushTransform();
@@ -221,35 +234,33 @@ public class Graphics {
 		
 		int originalMode = currentDrawingMode;
 		setDrawMode(MODE_ALPHA_MAP);
-		setColor(new Color(0,0,0,0));
+		setColor(new Color(0, 0, 0, 0));
 		fillRect(0, 0, screenWidth, screenHeight);
 		setColor(currentColor);
 		setDrawMode(originalMode);
 		
 		popTransform();
 	}
-
+	
 	/**
-	 * Must be called before all OpenGL operations to maintain context for
-	 * dynamic images
+	 * Must be called before all OpenGL operations to maintain context for dynamic images
 	 */
 	private void predraw() {
 		setCurrent(this);
 	}
-
+	
 	/**
-	 * Must be called after all OpenGL operations to maintain context for
-	 * dynamic images
+	 * Must be called after all OpenGL operations to maintain context for dynamic images
 	 */
 	private void postdraw() {
 	}
-
+	
 	/**
 	 * Enable rendering to this graphics context
 	 */
 	protected void enable() {
 	}
-
+	
 	/**
 	 * Flush this graphics context to the underlying rendering context
 	 */
@@ -259,13 +270,13 @@ public class Graphics {
 			currentGraphics = null;
 		}
 	}
-
+	
 	/**
 	 * Disable rendering to this graphics context
 	 */
 	protected void disable() {
 	}
-
+	
 	/**
 	 * Get the current font
 	 * 
@@ -274,11 +285,10 @@ public class Graphics {
 	public Font getFont() {
 		return font;
 	}
-
+	
 	/**
-	 * Set the background colour of the graphics context. This colour
-	 * is used when clearing the context. Note that calling this method
-	 * alone does not cause the context to be cleared.
+	 * Set the background colour of the graphics context. This colour is used when clearing the context. Note that
+	 * calling this method alone does not cause the context to be cleared.
 	 * 
 	 * @param color
 	 *            The background color of the graphics context
@@ -288,7 +298,7 @@ public class Graphics {
 		GL.glClearColor(color.r, color.g, color.b, color.a);
 		postdraw();
 	}
-
+	
 	/**
 	 * Get the current graphics context background color
 	 * 
@@ -299,10 +309,10 @@ public class Graphics {
 		FloatBuffer buffer = BufferUtils.createFloatBuffer(16);
 		GL.glGetFloat(SGL.GL_COLOR_CLEAR_VALUE, buffer);
 		postdraw();
-
+		
 		return new Color(buffer);
 	}
-
+	
 	/**
 	 * Clear the graphics context
 	 */
@@ -311,7 +321,7 @@ public class Graphics {
 		GL.glClear(SGL.GL_COLOR_BUFFER_BIT);
 		postdraw();
 	}
-
+	
 	/**
 	 * Reset the transformation on this graphics context
 	 */
@@ -326,7 +336,7 @@ public class Graphics {
 			postdraw();
 		}
 	}
-
+	
 	/**
 	 * Check if we've pushed the previous matrix, if not then push it now.
 	 */
@@ -338,7 +348,7 @@ public class Graphics {
 			postdraw();
 		}
 	}
-
+	
 	/**
 	 * Apply a scaling factor to everything drawn on the graphics context
 	 * 
@@ -352,12 +362,12 @@ public class Graphics {
 		this.sy = this.sy * sy;
 		
 		checkPush();
-
+		
 		predraw();
 		GL.glScalef(sx, sy, 1);
 		postdraw();
 	}
-
+	
 	/**
 	 * Apply a rotation to everything draw on the graphics context
 	 * 
@@ -370,14 +380,14 @@ public class Graphics {
 	 */
 	public void rotate(float rx, float ry, float ang) {
 		checkPush();
-
+		
 		predraw();
 		translate(rx, ry);
 		GL.glRotatef(ang, 0, 0, 1);
 		translate(-rx, -ry);
 		postdraw();
 	}
-
+	
 	/**
 	 * Apply a translation to everything drawn to the context
 	 * 
@@ -388,12 +398,12 @@ public class Graphics {
 	 */
 	public void translate(float x, float y) {
 		checkPush();
-
+		
 		predraw();
 		GL.glTranslatef(x, y, 0);
 		postdraw();
 	}
-
+	
 	/**
 	 * Set the font to be used when rendering text
 	 * 
@@ -403,14 +413,14 @@ public class Graphics {
 	public void setFont(Font font) {
 		this.font = font;
 	}
-
+	
 	/**
 	 * Reset to using the default font for this context
 	 */
 	public void resetFont() {
 		font = DEFAULT_FONT;
 	}
-
+	
 	/**
 	 * Set the color to use when rendering to this context
 	 * 
@@ -427,7 +437,7 @@ public class Graphics {
 		currentColor.bind();
 		postdraw();
 	}
-
+	
 	/**
 	 * Get the color in use by this graphics context
 	 * 
@@ -436,7 +446,7 @@ public class Graphics {
 	public Color getColor() {
 		return new Color(currentColor);
 	}
-
+	
 	/**
 	 * Draw a line on the canvas in the current colour
 	 * 
@@ -461,7 +471,7 @@ public class Graphics {
 				}
 				float step = 1 / sy;
 				lineWidth = lineWidth / sy;
-				fillRect(x1-(lineWidth/2.0f),y1-(lineWidth/2.0f),lineWidth+step,(y2-y1)+lineWidth+step);
+				fillRect(x1 - (lineWidth / 2.0f), y1 - (lineWidth / 2.0f), lineWidth + step, (y2 - y1) + lineWidth + step);
 				return;
 			} else if (y1 == y2) {
 				if (x1 > x2) {
@@ -471,7 +481,7 @@ public class Graphics {
 				}
 				float step = 1 / sx;
 				lineWidth = lineWidth / sx;
-				fillRect(x1-(lineWidth/2.0f),y1-(lineWidth/2.0f),(x2-x1)+lineWidth+step,lineWidth+step);
+				fillRect(x1 - (lineWidth / 2.0f), y1 - (lineWidth / 2.0f), (x2 - x1) + lineWidth + step, lineWidth + step);
 				return;
 			}
 		}
@@ -479,15 +489,15 @@ public class Graphics {
 		predraw();
 		currentColor.bind();
 		TextureImpl.bindNone();
-
+		
 		LSR.start();
-		LSR.vertex(x1,y1);
-		LSR.vertex(x2,y2);
+		LSR.vertex(x1, y1);
+		LSR.vertex(x2, y2);
 		LSR.end();
 		
 		postdraw();
 	}
-
+	
 	/**
 	 * Draw the outline of the given shape.
 	 * 
@@ -499,13 +509,13 @@ public class Graphics {
 	public void draw(Shape shape, ShapeFill fill) {
 		predraw();
 		TextureImpl.bindNone();
-
+		
 		ShapeRenderer.draw(shape, fill);
-
+		
 		currentColor.bind();
 		postdraw();
 	}
-
+	
 	/**
 	 * Draw the the given shape filled in.
 	 * 
@@ -517,13 +527,13 @@ public class Graphics {
 	public void fill(Shape shape, ShapeFill fill) {
 		predraw();
 		TextureImpl.bindNone();
-
+		
 		ShapeRenderer.fill(shape, fill);
-
+		
 		currentColor.bind();
 		postdraw();
 	}
-
+	
 	/**
 	 * Draw the outline of the given shape.
 	 * 
@@ -534,12 +544,12 @@ public class Graphics {
 		predraw();
 		TextureImpl.bindNone();
 		currentColor.bind();
-
+		
 		ShapeRenderer.draw(shape);
-
+		
 		postdraw();
 	}
-
+	
 	/**
 	 * Draw the the given shape filled in.
 	 * 
@@ -550,12 +560,12 @@ public class Graphics {
 		predraw();
 		TextureImpl.bindNone();
 		currentColor.bind();
-
+		
 		ShapeRenderer.fill(shape);
-
+		
 		postdraw();
 	}
-
+	
 	/**
 	 * Draw the the given shape filled in with a texture
 	 * 
@@ -567,7 +577,7 @@ public class Graphics {
 	public void texture(Shape shape, Image image) {
 		texture(shape, image, 0.01f, 0.01f, false);
 	}
-
+	
 	/**
 	 * Draw the the given shape filled in with a texture
 	 * 
@@ -581,7 +591,7 @@ public class Graphics {
 	public void texture(Shape shape, Image image, ShapeFill fill) {
 		texture(shape, image, 0.01f, 0.01f, fill);
 	}
-
+	
 	/**
 	 * Draw the the given shape filled in with a texture
 	 * 
@@ -599,7 +609,7 @@ public class Graphics {
 			texture(shape, image, 0.01f, 0.01f, false);
 		}
 	}
-
+	
 	/**
 	 * Draw the the given shape filled in with a texture
 	 * 
@@ -615,7 +625,7 @@ public class Graphics {
 	public void texture(Shape shape, Image image, float scaleX, float scaleY) {
 		texture(shape, image, scaleX, scaleY, false);
 	}
-
+	
 	/**
 	 * Draw the the given shape filled in with a texture
 	 * 
@@ -630,12 +640,11 @@ public class Graphics {
 	 * @param fit
 	 *            True if we want to fit the image on to the shape
 	 */
-	public void texture(Shape shape, Image image, float scaleX, float scaleY,
-			boolean fit) {
+	public void texture(Shape shape, Image image, float scaleX, float scaleY, boolean fit) {
 		predraw();
 		TextureImpl.bindNone();
 		currentColor.bind();
-
+		
 		if (fit) {
 			ShapeRenderer.textureFit(shape, image, scaleX, scaleY);
 		} else {
@@ -644,7 +653,7 @@ public class Graphics {
 		
 		postdraw();
 	}
-
+	
 	/**
 	 * Draw the the given shape filled in with a texture
 	 * 
@@ -659,17 +668,16 @@ public class Graphics {
 	 * @param fill
 	 *            The shape fill to apply
 	 */
-	public void texture(Shape shape, Image image, float scaleX, float scaleY,
-			ShapeFill fill) {
+	public void texture(Shape shape, Image image, float scaleX, float scaleY, ShapeFill fill) {
 		predraw();
 		TextureImpl.bindNone();
 		currentColor.bind();
-
+		
 		ShapeRenderer.texture(shape, image, scaleX, scaleY, fill);
-
+		
 		postdraw();
 	}
-
+	
 	/**
 	 * Draw a rectangle to the canvas in the current colour
 	 * 
@@ -685,15 +693,14 @@ public class Graphics {
 	public void drawRect(float x1, float y1, float width, float height) {
 		float lineWidth = getLineWidth();
 		
-		drawLine(x1,y1,x1+width,y1);
-		drawLine(x1+width,y1,x1+width,y1+height);
-		drawLine(x1+width,y1+height,x1,y1+height);
-		drawLine(x1,y1+height,x1,y1);
+		drawLine(x1, y1, x1 + width, y1);
+		drawLine(x1 + width, y1, x1 + width, y1 + height);
+		drawLine(x1 + width, y1 + height, x1, y1 + height);
+		drawLine(x1, y1 + height, x1, y1);
 	}
-
+	
 	/**
-	 * Clear the clipping being applied. This will allow graphics to be drawn
-	 * anywhere on the screen
+	 * Clear the clipping being applied. This will allow graphics to be drawn anywhere on the screen
 	 */
 	public void clearClip() {
 		clip = null;
@@ -701,12 +708,11 @@ public class Graphics {
 		GL.glDisable(SGL.GL_SCISSOR_TEST);
 		postdraw();
 	}
-
+	
 	/**
-	 * Set clipping that controls which areas of the world will be drawn to.
-	 * Note that world clip is different from standard screen clip in that it's
-	 * defined in the space of the current world coordinate - i.e. it's affected
-	 * by translate, rotate, scale etc.
+	 * Set clipping that controls which areas of the world will be drawn to. Note that world clip is different from
+	 * standard screen clip in that it's defined in the space of the current world coordinate - i.e. it's affected by
+	 * translate, rotate, scale etc.
 	 * 
 	 * @param x
 	 *            The x coordinate of the top left corner of the allowed area
@@ -727,7 +733,7 @@ public class Graphics {
 		GL.glEnable(SGL.GL_CLIP_PLANE1);
 		worldClip.put(-1).put(0).put(0).put(x + width).flip();
 		GL.glClipPlane(SGL.GL_CLIP_PLANE1, worldClip);
-
+		
 		GL.glEnable(SGL.GL_CLIP_PLANE2);
 		worldClip.put(0).put(1).put(0).put(-y).flip();
 		GL.glClipPlane(SGL.GL_CLIP_PLANE2, worldClip);
@@ -736,7 +742,7 @@ public class Graphics {
 		GL.glClipPlane(SGL.GL_CLIP_PLANE3, worldClip);
 		postdraw();
 	}
-
+	
 	/**
 	 * Clear world clipping setup. This does not effect screen clipping
 	 */
@@ -749,7 +755,7 @@ public class Graphics {
 		GL.glDisable(SGL.GL_CLIP_PLANE3);
 		postdraw();
 	}
-
+	
 	/**
 	 * Set the world clip to be applied
 	 * 
@@ -761,11 +767,10 @@ public class Graphics {
 		if (clip == null) {
 			clearWorldClip();
 		} else {
-			setWorldClip(clip.getX(), clip.getY(), clip.getWidth(), clip
-					.getHeight());
+			setWorldClip(clip.getX(), clip.getY(), clip.getWidth(), clip.getHeight());
 		}
 	}
-
+	
 	/**
 	 * Get the last set world clip or null of the world clip isn't set
 	 * 
@@ -774,11 +779,10 @@ public class Graphics {
 	public Rectangle getWorldClip() {
 		return worldClipRecord;
 	}
-
+	
 	/**
-	 * Set the clipping to apply to the drawing. Note that this clipping takes
-	 * no note of the transforms that have been applied to the context and is
-	 * always in absolute screen space coordinates.
+	 * Set the clipping to apply to the drawing. Note that this clipping takes no note of the transforms that have been
+	 * applied to the context and is always in absolute screen space coordinates.
 	 * 
 	 * @param x
 	 *            The x coordinate of the top left corner of the allowed area
@@ -796,45 +800,40 @@ public class Graphics {
 			GL.glEnable(SGL.GL_SCISSOR_TEST);
 			clip = new Rectangle(x, y, width, height);
 		} else {
-			clip.setBounds(x,y,width,height);
+			clip.setBounds(x, y, width, height);
 		}
 		
 		GL.glScissor(x, screenHeight - y - height, width, height);
 		postdraw();
 	}
-
+	
 	/**
-	 * Set the clipping to apply to the drawing. Note that this clipping takes
-	 * no note of the transforms that have been applied to the context and is
-	 * always in absolute screen space coordinates.
+	 * Set the clipping to apply to the drawing. Note that this clipping takes no note of the transforms that have been
+	 * applied to the context and is always in absolute screen space coordinates.
 	 * 
 	 * @param rect
-	 *            The rectangle describing the clipped area in screen
-	 *            coordinates
+	 *            The rectangle describing the clipped area in screen coordinates
 	 */
 	public void setClip(Rectangle rect) {
 		if (rect == null) {
 			clearClip();
 			return;
 		}
-
-		setClip((int) rect.getX(), (int) rect.getY(), (int) rect.getWidth(),
-				(int) rect.getHeight());
+		
+		setClip((int) rect.getX(), (int) rect.getY(), (int) rect.getWidth(), (int) rect.getHeight());
 	}
-
+	
 	/**
 	 * Return the currently applied clipping rectangle
 	 * 
-	 * @return The current applied clipping rectangle or null if no clipping is
-	 *         applied
+	 * @return The current applied clipping rectangle or null if no clipping is applied
 	 */
 	public Rectangle getClip() {
 		return clip;
 	}
-
+	
 	/**
-	 * Tile a rectangle with a pattern specifing the offset from the top corner
-	 * that one tile should match
+	 * Tile a rectangle with a pattern specifing the offset from the top corner that one tile should match
 	 * 
 	 * @param x
 	 *            The x coordinate of the rectangle
@@ -851,27 +850,25 @@ public class Graphics {
 	 * @param offY
 	 *            The offset on the y axis from the top left corner
 	 */
-	public void fillRect(float x, float y, float width, float height,
-			Image pattern, float offX, float offY) {
+	public void fillRect(float x, float y, float width, float height, Image pattern, float offX, float offY) {
 		int cols = ((int) Math.ceil(width / pattern.getWidth())) + 2;
 		int rows = ((int) Math.ceil(height / pattern.getHeight())) + 2;
-
+		
 		Rectangle preClip = getWorldClip();
 		setWorldClip(x, y, width, height);
-
+		
 		predraw();
 		// Draw all the quads we need
 		for (int c = 0; c < cols; c++) {
 			for (int r = 0; r < rows; r++) {
-				pattern.draw(c * pattern.getWidth() + x - offX, r
-						* pattern.getHeight() + y - offY);
+				pattern.draw(c * pattern.getWidth() + x - offX, r * pattern.getHeight() + y - offY);
 			}
 		}
 		postdraw();
-
+		
 		setWorldClip(preClip);
 	}
-
+	
 	/**
 	 * Fill a rectangle on the canvas in the current color
 	 * 
@@ -888,7 +885,7 @@ public class Graphics {
 		predraw();
 		TextureImpl.bindNone();
 		currentColor.bind();
-
+		
 		GL.glBegin(SGL.GL_QUADS);
 		GL.glVertex2f(x1, y1);
 		GL.glVertex2f(x1 + width, y1);
@@ -897,16 +894,14 @@ public class Graphics {
 		GL.glEnd();
 		postdraw();
 	}
-
+	
 	/**
 	 * Draw an oval to the canvas
 	 * 
 	 * @param x1
-	 *            The x coordinate of the top left corner of a box containing
-	 *            the oval
+	 *            The x coordinate of the top left corner of a box containing the oval
 	 * @param y1
-	 *            The y coordinate of the top left corner of a box containing
-	 *            the oval
+	 *            The y coordinate of the top left corner of a box containing the oval
 	 * @param width
 	 *            The width of the oval
 	 * @param height
@@ -915,16 +910,14 @@ public class Graphics {
 	public void drawOval(float x1, float y1, float width, float height) {
 		drawOval(x1, y1, width, height, DEFAULT_SEGMENTS);
 	}
-
+	
 	/**
 	 * Draw an oval to the canvas
 	 * 
 	 * @param x1
-	 *            The x coordinate of the top left corner of a box containing
-	 *            the oval
+	 *            The x coordinate of the top left corner of a box containing the oval
 	 * @param y1
-	 *            The y coordinate of the top left corner of a box containing
-	 *            the oval
+	 *            The y coordinate of the top left corner of a box containing the oval
 	 * @param width
 	 *            The width of the oval
 	 * @param height
@@ -932,20 +925,17 @@ public class Graphics {
 	 * @param segments
 	 *            The number of line segments to use when drawing the oval
 	 */
-	public void drawOval(float x1, float y1, float width, float height,
-			int segments) {
+	public void drawOval(float x1, float y1, float width, float height, int segments) {
 		drawArc(x1, y1, width, height, segments, 0, 360);
 	}
-
+	
 	/**
 	 * Draw an oval to the canvas
 	 * 
 	 * @param x1
-	 *            The x coordinate of the top left corner of a box containing
-	 *            the arc
+	 *            The x coordinate of the top left corner of a box containing the arc
 	 * @param y1
-	 *            The y coordinate of the top left corner of a box containing
-	 *            the arc
+	 *            The y coordinate of the top left corner of a box containing the arc
 	 * @param width
 	 *            The width of the arc
 	 * @param height
@@ -955,20 +945,17 @@ public class Graphics {
 	 * @param end
 	 *            The angle the arc ends at
 	 */
-	public void drawArc(float x1, float y1, float width, float height,
-			float start, float end) {
+	public void drawArc(float x1, float y1, float width, float height, float start, float end) {
 		drawArc(x1, y1, width, height, DEFAULT_SEGMENTS, start, end);
 	}
-
+	
 	/**
 	 * Draw an oval to the canvas
 	 * 
 	 * @param x1
-	 *            The x coordinate of the top left corner of a box containing
-	 *            the arc
+	 *            The x coordinate of the top left corner of a box containing the arc
 	 * @param y1
-	 *            The y coordinate of the top left corner of a box containing
-	 *            the arc
+	 *            The y coordinate of the top left corner of a box containing the arc
 	 * @param width
 	 *            The width of the arc
 	 * @param height
@@ -980,22 +967,21 @@ public class Graphics {
 	 * @param end
 	 *            The angle the arc ends at
 	 */
-	public void drawArc(float x1, float y1, float width, float height,
-			int segments, float start, float end) {
+	public void drawArc(float x1, float y1, float width, float height, int segments, float start, float end) {
 		predraw();
 		TextureImpl.bindNone();
 		currentColor.bind();
-
+		
 		while (end < start) {
 			end += 360;
 		}
-
+		
 		float cx = x1 + (width / 2.0f);
 		float cy = y1 + (height / 2.0f);
-
+		
 		LSR.start();
 		int step = 360 / segments;
-
+		
 		for (int a = (int) start; a < (int) (end + step); a += step) {
 			float ang = a;
 			if (ang > end) {
@@ -1003,22 +989,20 @@ public class Graphics {
 			}
 			float x = (float) (cx + (FastTrig.cos(Math.toRadians(ang)) * width / 2.0f));
 			float y = (float) (cy + (FastTrig.sin(Math.toRadians(ang)) * height / 2.0f));
-
-			LSR.vertex(x,y);
+			
+			LSR.vertex(x, y);
 		}
 		LSR.end();
 		postdraw();
 	}
-
+	
 	/**
 	 * Fill an oval to the canvas
 	 * 
 	 * @param x1
-	 *            The x coordinate of the top left corner of a box containing
-	 *            the oval
+	 *            The x coordinate of the top left corner of a box containing the oval
 	 * @param y1
-	 *            The y coordinate of the top left corner of a box containing
-	 *            the oval
+	 *            The y coordinate of the top left corner of a box containing the oval
 	 * @param width
 	 *            The width of the oval
 	 * @param height
@@ -1027,16 +1011,14 @@ public class Graphics {
 	public void fillOval(float x1, float y1, float width, float height) {
 		fillOval(x1, y1, width, height, DEFAULT_SEGMENTS);
 	}
-
+	
 	/**
 	 * Fill an oval to the canvas
 	 * 
 	 * @param x1
-	 *            The x coordinate of the top left corner of a box containing
-	 *            the oval
+	 *            The x coordinate of the top left corner of a box containing the oval
 	 * @param y1
-	 *            The y coordinate of the top left corner of a box containing
-	 *            the oval
+	 *            The y coordinate of the top left corner of a box containing the oval
 	 * @param width
 	 *            The width of the oval
 	 * @param height
@@ -1044,20 +1026,17 @@ public class Graphics {
 	 * @param segments
 	 *            The number of line segments to use when filling the oval
 	 */
-	public void fillOval(float x1, float y1, float width, float height,
-			int segments) {
+	public void fillOval(float x1, float y1, float width, float height, int segments) {
 		fillArc(x1, y1, width, height, segments, 0, 360);
 	}
-
+	
 	/**
 	 * Fill an arc to the canvas (a wedge)
 	 * 
 	 * @param x1
-	 *            The x coordinate of the top left corner of a box containing
-	 *            the arc
+	 *            The x coordinate of the top left corner of a box containing the arc
 	 * @param y1
-	 *            The y coordinate of the top left corner of a box containing
-	 *            the arc
+	 *            The y coordinate of the top left corner of a box containing the arc
 	 * @param width
 	 *            The width of the arc
 	 * @param height
@@ -1067,20 +1046,17 @@ public class Graphics {
 	 * @param end
 	 *            The angle the arc ends at
 	 */
-	public void fillArc(float x1, float y1, float width, float height,
-			float start, float end) {
+	public void fillArc(float x1, float y1, float width, float height, float start, float end) {
 		fillArc(x1, y1, width, height, DEFAULT_SEGMENTS, start, end);
 	}
-
+	
 	/**
 	 * Fill an arc to the canvas (a wedge)
 	 * 
 	 * @param x1
-	 *            The x coordinate of the top left corner of a box containing
-	 *            the arc
+	 *            The x coordinate of the top left corner of a box containing the arc
 	 * @param y1
-	 *            The y coordinate of the top left corner of a box containing
-	 *            the arc
+	 *            The y coordinate of the top left corner of a box containing the arc
 	 * @param width
 	 *            The width of the arc
 	 * @param height
@@ -1092,63 +1068,60 @@ public class Graphics {
 	 * @param end
 	 *            The angle the arc ends at
 	 */
-	public void fillArc(float x1, float y1, float width, float height,
-			int segments, float start, float end) {
+	public void fillArc(float x1, float y1, float width, float height, int segments, float start, float end) {
 		predraw();
 		TextureImpl.bindNone();
 		currentColor.bind();
-
+		
 		while (end < start) {
 			end += 360;
 		}
-
+		
 		float cx = x1 + (width / 2.0f);
 		float cy = y1 + (height / 2.0f);
-
+		
 		GL.glBegin(SGL.GL_TRIANGLE_FAN);
 		int step = 360 / segments;
-
+		
 		GL.glVertex2f(cx, cy);
-
+		
 		for (int a = (int) start; a < (int) (end + step); a += step) {
 			float ang = a;
 			if (ang > end) {
 				ang = end;
 			}
-
+			
 			float x = (float) (cx + (FastTrig.cos(Math.toRadians(ang)) * width / 2.0f));
 			float y = (float) (cy + (FastTrig.sin(Math.toRadians(ang)) * height / 2.0f));
-
+			
 			GL.glVertex2f(x, y);
 		}
 		GL.glEnd();
-
+		
 		if (antialias) {
 			GL.glBegin(SGL.GL_TRIANGLE_FAN);
 			GL.glVertex2f(cx, cy);
 			if (end != 360) {
 				end -= 10;
 			}
-
+			
 			for (int a = (int) start; a < (int) (end + step); a += step) {
 				float ang = a;
 				if (ang > end) {
 					ang = end;
 				}
-
-				float x = (float) (cx + (FastTrig.cos(Math.toRadians(ang + 10))
-						* width / 2.0f));
-				float y = (float) (cy + (FastTrig.sin(Math.toRadians(ang + 10))
-						* height / 2.0f));
-
+				
+				float x = (float) (cx + (FastTrig.cos(Math.toRadians(ang + 10)) * width / 2.0f));
+				float y = (float) (cy + (FastTrig.sin(Math.toRadians(ang + 10)) * height / 2.0f));
+				
 				GL.glVertex2f(x, y);
 			}
 			GL.glEnd();
 		}
-
+		
 		postdraw();
 	}
-
+	
 	/**
 	 * Draw a rounded rectangle
 	 * 
@@ -1163,11 +1136,10 @@ public class Graphics {
 	 * @param cornerRadius
 	 *            The radius of the rounded edges on the corners
 	 */
-	public void drawRoundRect(float x, float y, float width, float height,
-			int cornerRadius) {
+	public void drawRoundRect(float x, float y, float width, float height, int cornerRadius) {
 		drawRoundRect(x, y, width, height, cornerRadius, DEFAULT_SEGMENTS);
 	}
-
+	
 	/**
 	 * Draw a rounded rectangle
 	 * 
@@ -1184,28 +1156,25 @@ public class Graphics {
 	 * @param segs
 	 *            The number of segments to make the corners out of
 	 */
-	public void drawRoundRect(float x, float y, float width, float height,
-			int cornerRadius, int segs) {
+	public void drawRoundRect(float x, float y, float width, float height, int cornerRadius, int segs) {
 		if (cornerRadius < 0)
 			throw new IllegalArgumentException("corner radius must be > 0");
 		if (cornerRadius == 0) {
 			drawRect(x, y, width, height);
 			return;
 		}
-
+		
 		int mr = (int) Math.min(width, height) / 2;
 		// make sure that w & h are larger than 2*cornerRadius
 		if (cornerRadius > mr) {
 			cornerRadius = mr;
 		}
-
+		
 		drawLine(x + cornerRadius, y, x + width - cornerRadius, y);
 		drawLine(x, y + cornerRadius, x, y + height - cornerRadius);
-		drawLine(x + width, y + cornerRadius, x + width, y + height
-				- cornerRadius);
-		drawLine(x + cornerRadius, y + height, x + width - cornerRadius, y
-				+ height);
-
+		drawLine(x + width, y + cornerRadius, x + width, y + height - cornerRadius);
+		drawLine(x + cornerRadius, y + height, x + width - cornerRadius, y + height);
+		
 		float d = cornerRadius * 2;
 		// bottom right - 0, 90
 		drawArc(x + width - d, y + height - d, d, d, segs, 0, 90);
@@ -1216,7 +1185,7 @@ public class Graphics {
 		// top left - 180, 270
 		drawArc(x, y, d, d, segs, 180, 270);
 	}
-
+	
 	/**
 	 * Fill a rounded rectangle
 	 * 
@@ -1231,11 +1200,10 @@ public class Graphics {
 	 * @param cornerRadius
 	 *            The radius of the rounded edges on the corners
 	 */
-	public void fillRoundRect(float x, float y, float width, float height,
-			int cornerRadius) {
+	public void fillRoundRect(float x, float y, float width, float height, int cornerRadius) {
 		fillRoundRect(x, y, width, height, cornerRadius, DEFAULT_SEGMENTS);
 	}
-
+	
 	/**
 	 * Fill a rounded rectangle
 	 * 
@@ -1252,31 +1220,28 @@ public class Graphics {
 	 * @param segs
 	 *            The number of segments to make the corners out of
 	 */
-	public void fillRoundRect(float x, float y, float width, float height,
-			int cornerRadius, int segs) {
+	public void fillRoundRect(float x, float y, float width, float height, int cornerRadius, int segs) {
 		if (cornerRadius < 0)
 			throw new IllegalArgumentException("corner radius must be > 0");
 		if (cornerRadius == 0) {
 			fillRect(x, y, width, height);
 			return;
 		}
-
+		
 		int mr = (int) Math.min(width, height) / 2;
 		// make sure that w & h are larger than 2*cornerRadius
 		if (cornerRadius > mr) {
 			cornerRadius = mr;
 		}
-
+		
 		float d = cornerRadius * 2;
-
+		
 		fillRect(x + cornerRadius, y, width - d, cornerRadius);
 		fillRect(x, y + cornerRadius, cornerRadius, height - d);
-		fillRect(x + width - cornerRadius, y + cornerRadius, cornerRadius,
-				height - d);
-		fillRect(x + cornerRadius, y + height - cornerRadius, width - d,
-				cornerRadius);
+		fillRect(x + width - cornerRadius, y + cornerRadius, cornerRadius, height - d);
+		fillRect(x + cornerRadius, y + height - cornerRadius, width - d, cornerRadius);
 		fillRect(x + cornerRadius, y + cornerRadius, width - d, height - d);
-
+		
 		// bottom right - 0, 90
 		fillArc(x + width - d, y + height - d, d, d, segs, 0, 90);
 		// bottom left - 90, 180
@@ -1286,13 +1251,12 @@ public class Graphics {
 		// top left - 180, 270
 		fillArc(x, y, d, d, segs, 180, 270);
 	}
-
+	
 	/**
 	 * Set the with of the line to be used when drawing line based primitives
 	 * 
 	 * @param width
-	 *            The width of the line to be used when drawing line based
-	 *            primitives
+	 *            The width of the line to be used when drawing line based primitives
 	 */
 	public void setLineWidth(float width) {
 		predraw();
@@ -1301,7 +1265,7 @@ public class Graphics {
 		GL.glPointSize(width);
 		postdraw();
 	}
-
+	
 	/**
 	 * Get the width of lines being drawn in this context
 	 * 
@@ -1310,7 +1274,7 @@ public class Graphics {
 	public float getLineWidth() {
 		return lineWidth;
 	}
-
+	
 	/**
 	 * Reset the line width in use to the default for this graphics context
 	 */
@@ -1323,7 +1287,7 @@ public class Graphics {
 		
 		postdraw();
 	}
-
+	
 	/**
 	 * Indicate if we should antialias as we draw primitives
 	 * 
@@ -1341,7 +1305,7 @@ public class Graphics {
 		}
 		postdraw();
 	}
-
+	
 	/**
 	 * True if antialiasing has been turned on for this graphics context
 	 * 
@@ -1350,7 +1314,7 @@ public class Graphics {
 	public boolean isAntiAlias() {
 		return antialias;
 	}
-
+	
 	/**
 	 * Draw a string to the screen using the current font
 	 * 
@@ -1366,7 +1330,7 @@ public class Graphics {
 		font.drawString(x, y, str, currentColor);
 		postdraw();
 	}
-
+	
 	/**
 	 * Draw an image to the screen
 	 * 
@@ -1385,7 +1349,7 @@ public class Graphics {
 		currentColor.bind();
 		postdraw();
 	}
-
+	
 	/**
 	 * Draw an animation to this graphics context
 	 * 
@@ -1399,7 +1363,7 @@ public class Graphics {
 	public void drawAnimation(Animation anim, float x, float y) {
 		drawAnimation(anim, x, y, Color.white);
 	}
-
+	
 	/**
 	 * Draw an animation to this graphics context
 	 * 
@@ -1418,7 +1382,7 @@ public class Graphics {
 		currentColor.bind();
 		postdraw();
 	}
-
+	
 	/**
 	 * Draw an image to the screen
 	 * 
@@ -1432,10 +1396,9 @@ public class Graphics {
 	public void drawImage(Image image, float x, float y) {
 		drawImage(image, x, y, Color.white);
 	}
-
+	
 	/**
-	 * Draw a section of an image at a particular location and scale on the
-	 * screen
+	 * Draw a section of an image at a particular location and scale on the screen
 	 * 
 	 * @param image
 	 *            The image to draw a section of
@@ -1448,29 +1411,25 @@ public class Graphics {
 	 * @param y2
 	 *            The y position of the bottom right corner of the drawn image
 	 * @param srcx
-	 *            The x position of the rectangle to draw from this image (i.e.
-	 *            relative to the image)
+	 *            The x position of the rectangle to draw from this image (i.e. relative to the image)
 	 * @param srcy
-	 *            The y position of the rectangle to draw from this image (i.e.
-	 *            relative to the image)
+	 *            The y position of the rectangle to draw from this image (i.e. relative to the image)
 	 * @param srcx2
-	 *            The x position of the bottom right cornder of rectangle to
-	 *            draw from this image (i.e. relative to the image)
+	 *            The x position of the bottom right cornder of rectangle to draw from this image (i.e. relative to the
+	 *            image)
 	 * @param srcy2
-	 *            The t position of the bottom right cornder of rectangle to
-	 *            draw from this image (i.e. relative to the image)
+	 *            The t position of the bottom right cornder of rectangle to draw from this image (i.e. relative to the
+	 *            image)
 	 */
-	public void drawImage(Image image, float x, float y, float x2, float y2,
-			float srcx, float srcy, float srcx2, float srcy2) {
+	public void drawImage(Image image, float x, float y, float x2, float y2, float srcx, float srcy, float srcx2, float srcy2) {
 		predraw();
 		image.draw(x, y, x2, y2, srcx, srcy, srcx2, srcy2);
 		currentColor.bind();
 		postdraw();
 	}
-
+	
 	/**
-	 * Draw a section of an image at a particular location and scale on the
-	 * screen
+	 * Draw a section of an image at a particular location and scale on the screen
 	 * 
 	 * @param image
 	 *            The image to draw a section of
@@ -1479,27 +1438,23 @@ public class Graphics {
 	 * @param y
 	 *            The y position to draw the image
 	 * @param srcx
-	 *            The x position of the rectangle to draw from this image (i.e.
-	 *            relative to the image)
+	 *            The x position of the rectangle to draw from this image (i.e. relative to the image)
 	 * @param srcy
-	 *            The y position of the rectangle to draw from this image (i.e.
-	 *            relative to the image)
+	 *            The y position of the rectangle to draw from this image (i.e. relative to the image)
 	 * @param srcx2
-	 *            The x position of the bottom right cornder of rectangle to
-	 *            draw from this image (i.e. relative to the image)
+	 *            The x position of the bottom right cornder of rectangle to draw from this image (i.e. relative to the
+	 *            image)
 	 * @param srcy2
-	 *            The t position of the bottom right cornder of rectangle to
-	 *            draw from this image (i.e. relative to the image)
+	 *            The t position of the bottom right cornder of rectangle to draw from this image (i.e. relative to the
+	 *            image)
 	 */
-	public void drawImage(Image image, float x, float y, float srcx,
-			float srcy, float srcx2, float srcy2) {
-		drawImage(image, x, y, x + image.getWidth(), y + image.getHeight(),
-				srcx, srcy, srcx2, srcy2);
+	public void drawImage(Image image, float x, float y, float srcx, float srcy, float srcx2, float srcy2) {
+		drawImage(image, x, y, x + image.getWidth(), y + image.getHeight(), srcx, srcy, srcx2, srcy2);
 	}
-
+	
 	/**
-	 * Copy an area of the rendered screen into an image. The width and height
-	 * of the area are assumed to match that of the image
+	 * Copy an area of the rendered screen into an image. The width and height of the area are assumed to match that of
+	 * the image
 	 * 
 	 * @param target
 	 *            The target image
@@ -1511,12 +1466,11 @@ public class Graphics {
 	public void copyArea(Image target, int x, int y) {
 		int format = target.getTexture().hasAlpha() ? SGL.GL_RGBA : SGL.GL_RGB;
 		target.bind();
-		GL.glCopyTexImage2D(SGL.GL_TEXTURE_2D, 0, format, x, screenHeight
-				- (y + target.getHeight()), target.getTexture()
-				.getTextureWidth(), target.getTexture().getTextureHeight(), 0);
+		GL.glCopyTexImage2D(SGL.GL_TEXTURE_2D, 0, format, x, screenHeight - (y + target.getHeight()), target.getTexture().getTextureWidth(),
+				target.getTexture().getTextureHeight(), 0);
 		target.ensureInverted();
 	}
-
+	
 	/**
 	 * Translate an unsigned int into a signed integer
 	 * 
@@ -1528,10 +1482,10 @@ public class Graphics {
 		if (b < 0) {
 			return 256 + b;
 		}
-
+		
 		return b;
 	}
-
+	
 	/**
 	 * Get the colour of a single pixel in this graphics context
 	 * 
@@ -1543,40 +1497,38 @@ public class Graphics {
 	 */
 	public Color getPixel(int x, int y) {
 		predraw();
-		GL.glReadPixels(x, screenHeight - y, 1, 1, SGL.GL_RGBA,
-				SGL.GL_UNSIGNED_BYTE, readBuffer);
+		GL.glReadPixels(x, screenHeight - y, 1, 1, SGL.GL_RGBA, SGL.GL_UNSIGNED_BYTE, readBuffer);
 		postdraw();
-
-		return new Color(translate(readBuffer.get(0)), translate(readBuffer
-				.get(1)), translate(readBuffer.get(2)), translate(readBuffer
-				.get(3)));
+		
+		return new Color(translate(readBuffer.get(0)), translate(readBuffer.get(1)), translate(readBuffer.get(2)), translate(readBuffer.get(3)));
 	}
-
+	
 	/**
 	 * Get an ara of pixels as RGBA values into a buffer
 	 * 
-	 * @param x The x position in the context to grab from
-	 * @param y The y position in the context to grab from
-	 * @param width The width of the area to grab from 
-	 * @param height The hiehgt of the area to grab from
-	 * @param target The target buffer to grab into
+	 * @param x
+	 *            The x position in the context to grab from
+	 * @param y
+	 *            The y position in the context to grab from
+	 * @param width
+	 *            The width of the area to grab from
+	 * @param height
+	 *            The hiehgt of the area to grab from
+	 * @param target
+	 *            The target buffer to grab into
 	 */
-	public void getArea(int x, int y, int width, int height, ByteBuffer target)
-	{
-		if (target.capacity() < width * height * 4) 
-		{
+	public void getArea(int x, int y, int width, int height, ByteBuffer target) {
+		if (target.capacity() < width * height * 4) {
 			throw new IllegalArgumentException("Byte buffer provided to get area is not big enough");
 		}
 		
-		predraw();	
-		GL.glReadPixels(x, screenHeight - y - height, width, height, SGL.GL_RGBA,
-				SGL.GL_UNSIGNED_BYTE, target);
+		predraw();
+		GL.glReadPixels(x, screenHeight - y - height, width, height, SGL.GL_RGBA, SGL.GL_UNSIGNED_BYTE, target);
 		postdraw();
 	}
 	
 	/**
-	 * Draw a section of an image at a particular location and scale on the
-	 * screen
+	 * Draw a section of an image at a particular location and scale on the screen
 	 * 
 	 * @param image
 	 *            The image to draw a section of
@@ -1589,31 +1541,27 @@ public class Graphics {
 	 * @param y2
 	 *            The y position of the bottom right corner of the drawn image
 	 * @param srcx
-	 *            The x position of the rectangle to draw from this image (i.e.
-	 *            relative to the image)
+	 *            The x position of the rectangle to draw from this image (i.e. relative to the image)
 	 * @param srcy
-	 *            The y position of the rectangle to draw from this image (i.e.
-	 *            relative to the image)
+	 *            The y position of the rectangle to draw from this image (i.e. relative to the image)
 	 * @param srcx2
-	 *            The x position of the bottom right cornder of rectangle to
-	 *            draw from this image (i.e. relative to the image)
+	 *            The x position of the bottom right cornder of rectangle to draw from this image (i.e. relative to the
+	 *            image)
 	 * @param srcy2
-	 *            The t position of the bottom right cornder of rectangle to
-	 *            draw from this image (i.e. relative to the image)
+	 *            The t position of the bottom right cornder of rectangle to draw from this image (i.e. relative to the
+	 *            image)
 	 * @param col
 	 *            The color to apply to the image as a filter
 	 */
-	public void drawImage(Image image, float x, float y, float x2, float y2,
-			float srcx, float srcy, float srcx2, float srcy2, Color col) {
+	public void drawImage(Image image, float x, float y, float x2, float y2, float srcx, float srcy, float srcx2, float srcy2, Color col) {
 		predraw();
 		image.draw(x, y, x2, y2, srcx, srcy, srcx2, srcy2, col);
 		currentColor.bind();
 		postdraw();
 	}
-
+	
 	/**
-	 * Draw a section of an image at a particular location and scale on the
-	 * screen
+	 * Draw a section of an image at a particular location and scale on the screen
 	 * 
 	 * @param image
 	 *            The image to draw a section of
@@ -1622,26 +1570,22 @@ public class Graphics {
 	 * @param y
 	 *            The y position to draw the image
 	 * @param srcx
-	 *            The x position of the rectangle to draw from this image (i.e.
-	 *            relative to the image)
+	 *            The x position of the rectangle to draw from this image (i.e. relative to the image)
 	 * @param srcy
-	 *            The y position of the rectangle to draw from this image (i.e.
-	 *            relative to the image)
+	 *            The y position of the rectangle to draw from this image (i.e. relative to the image)
 	 * @param srcx2
-	 *            The x position of the bottom right cornder of rectangle to
-	 *            draw from this image (i.e. relative to the image)
+	 *            The x position of the bottom right cornder of rectangle to draw from this image (i.e. relative to the
+	 *            image)
 	 * @param srcy2
-	 *            The t position of the bottom right cornder of rectangle to
-	 *            draw from this image (i.e. relative to the image)
+	 *            The t position of the bottom right cornder of rectangle to draw from this image (i.e. relative to the
+	 *            image)
 	 * @param col
 	 *            The color to apply to the image as a filter
 	 */
-	public void drawImage(Image image, float x, float y, float srcx,
-			float srcy, float srcx2, float srcy2, Color col) {
-		drawImage(image, x, y, x + image.getWidth(), y + image.getHeight(),
-				srcx, srcy, srcx2, srcy2, col);
+	public void drawImage(Image image, float x, float y, float srcx, float srcy, float srcx2, float srcy2, Color col) {
+		drawImage(image, x, y, x + image.getWidth(), y + image.getHeight(), srcx, srcy, srcx2, srcy2, col);
 	}
-
+	
 	/**
 	 * Draw a line with a gradient between the two points.
 	 * 
@@ -1670,26 +1614,25 @@ public class Graphics {
 	 * @param alpha2
 	 *            The ending position's alpha value
 	 */
-	public void drawGradientLine(float x1, float y1, float red1, float green1,
-									float blue1, float alpha1, float x2, float y2, float red2,
-									float green2, float blue2, float alpha2) {
+	public void drawGradientLine(float x1, float y1, float red1, float green1, float blue1, float alpha1, float x2, float y2, float red2,
+			float green2, float blue2, float alpha2) {
 		predraw();
-
+		
 		TextureImpl.bindNone();
-
+		
 		GL.glBegin(SGL.GL_LINES);
-
+		
 		GL.glColor4f(red1, green1, blue1, alpha1);
 		GL.glVertex2f(x1, y1);
-
+		
 		GL.glColor4f(red2, green2, blue2, alpha2);
 		GL.glVertex2f(x2, y2);
-
+		
 		GL.glEnd();
-
+		
 		postdraw();
 	}
-
+	
 	/**
 	 * Draw a line with a gradient between the two points.
 	 * 
@@ -1706,30 +1649,28 @@ public class Graphics {
 	 * @param Color2
 	 *            The ending position's color
 	 */
-	public void drawGradientLine(float x1, float y1, Color Color1, float x2,
-								 float y2, Color Color2) {
+	public void drawGradientLine(float x1, float y1, Color Color1, float x2, float y2, Color Color2) {
 		predraw();
-
+		
 		TextureImpl.bindNone();
-
+		
 		GL.glBegin(SGL.GL_LINES);
-
+		
 		Color1.bind();
 		GL.glVertex2f(x1, y1);
-
+		
 		Color2.bind();
 		GL.glVertex2f(x2, y2);
-
+		
 		GL.glEnd();
-
+		
 		postdraw();
 	}
 	
 	/**
-	 * Push the current state of the transform from this graphics contexts
-	 * onto the underlying graphics stack's transform stack. An associated 
-	 * popTransform() must be performed to restore the state before the end
-	 * of the rendering loop.
+	 * Push the current state of the transform from this graphics contexts onto the underlying graphics stack's
+	 * transform stack. An associated popTransform() must be performed to restore the state before the end of the
+	 * rendering loop.
 	 */
 	public void pushTransform() {
 		predraw();
@@ -1751,8 +1692,8 @@ public class Graphics {
 	}
 	
 	/**
-	 * Pop a previously pushed transform from the stack to the current. This should
-	 * only be called if a transform has been previously pushed.
+	 * Pop a previously pushed transform from the stack to the current. This should only be called if a transform has
+	 * been previously pushed.
 	 */
 	public void popTransform() {
 		if (stackIndex == 0) {
@@ -1771,8 +1712,8 @@ public class Graphics {
 	}
 	
 	/**
-	 * Dispose this graphics context, this will release any underlying resourses. However
-	 * this will also invalidate it's use
+	 * Dispose this graphics context, this will release any underlying resourses. However this will also invalidate it's
+	 * use
 	 */
 	public void destroy() {
 		
