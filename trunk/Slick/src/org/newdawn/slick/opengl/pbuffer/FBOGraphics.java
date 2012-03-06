@@ -34,7 +34,7 @@ public class FBOGraphics extends Graphics {
 	 * @throws SlickException Indicates a failure to use pbuffers
 	 */
 	public FBOGraphics(Image image) throws SlickException {
-		super(image.getTexture().getTextureWidth(), image.getTexture().getTextureHeight());
+		super(InternalTextureLoader.get2Fold(image.getWidth()), InternalTextureLoader.get2Fold(image.getHeight()));
 		this.image = image;
 		
 		Log.debug("Creating FBO "+image.getWidth()+"x"+image.getHeight());
@@ -102,13 +102,14 @@ public class FBOGraphics extends Graphics {
 			
 			completeCheck();
 			unbind();
-			
-			// Clear our destination area before using it
-			clear();
-			flush();
-			
-			// keep hold of the original content
-			drawImage(image, 0, 0);
+			if (image.getTexture()!=null) {
+				// Clear our destination area before using it
+				clear();
+				flush();
+				
+				// keep hold of the original content
+				drawImage(image, 0, 0);
+			}
 			image.setTexture(tex);
 			
 		} catch (Exception e) {
