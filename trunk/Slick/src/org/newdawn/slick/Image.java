@@ -809,8 +809,8 @@ public class Image implements Renderable {
             filter.bind(); 
         } 
         
-        float centerX = this.centerX * (width / getWidth());
-        float centerY = this.centerY * (height / getHeight());
+        float centerX = this.centerX * (width / (float)getWidth());
+        float centerY = this.centerY * (height / (float)getHeight());
        
         texture.bind();
         
@@ -894,8 +894,8 @@ public class Image implements Renderable {
 		col.bind();
 		texture.bind();
 		
-        float centerX = this.centerX * (width / getWidth());
-        float centerY = this.centerY * (height / getHeight());
+        float centerX = this.centerX * (width / (float)getWidth());
+        float centerY = this.centerY * (height / (float)getHeight());
        
 		if (GL.canSecondaryColor()) {
 			GL.glEnable(SGL.GL_COLOR_SUM_EXT);
@@ -1047,8 +1047,8 @@ public class Image implements Renderable {
 		filter.bind();
 		texture.bind();
 		
-        float centerX = this.centerX * ((x2-x) / getWidth());
-        float centerY = this.centerY * ((y2-y) / getHeight());
+        float centerX = this.centerX * ((x2-x) / (float)getWidth());
+        float centerY = this.centerY * ((y2-y) / (float)getHeight());
        
         GL.glTranslatef(x, y, 0);
         if (angle != 0) {
@@ -1290,8 +1290,8 @@ public class Image implements Renderable {
 		image.textureHeight = this.textureHeight;
 		image.width = width;
 		image.height = height;
-		image.centerX = this.centerX * (width / this.width);
-		image.centerY = this.centerY * (height / this.height);
+		image.centerX = this.centerX * (width / (float)this.width);
+		image.centerY = this.centerY * (height / (float)this.height);
 		return image;
 	}
 	
