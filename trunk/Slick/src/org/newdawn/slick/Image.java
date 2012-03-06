@@ -1433,6 +1433,7 @@ public class Image implements Renderable {
 		if (isDestroyed()) {
 			return;
 		}
+		flushPixelData();
 		destroyed = true;
 		texture.release();
 		GraphicsFactory.releaseGraphicsForImage(this);
