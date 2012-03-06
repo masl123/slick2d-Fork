@@ -734,7 +734,8 @@ public class Image implements Renderable {
     	this.drawSheared(x, y, hshear, vshear, Color.white);
     }
 	/**
-	 * Draw this image at a specified location and size
+	 * Draw this image at a specified location and size. The center of rotation
+	 * is <i>not</i> scaled according to the shear.
 	 * 
 	 * @param x The x location to draw the image at
 	 * @param y The y location to draw the image at
@@ -807,8 +808,11 @@ public class Image implements Renderable {
         if (filter != null) { 
             filter.bind(); 
         } 
+        
+        float centerX = this.centerX * (width / getWidth());
+        float centerY = this.centerY * (height / getHeight());
        
-        texture.bind(); 
+        texture.bind();
         
         GL.glTranslatef(x, y, 0);
         if (angle != 0) {
@@ -865,7 +869,7 @@ public class Image implements Renderable {
 	}
 	
 	/**
-	 * Get the y component of the center of rotation of this image
+	 * Get the y component of the center of rotation of this image.
 	 * 
 	 * @return The y component of the center of rotation 
 	 */
@@ -889,7 +893,10 @@ public class Image implements Renderable {
 		
 		col.bind();
 		texture.bind();
-
+		
+        float centerX = this.centerX * (width / getWidth());
+        float centerY = this.centerY * (height / getHeight());
+       
 		if (GL.canSecondaryColor()) {
 			GL.glEnable(SGL.GL_COLOR_SUM_EXT);
 			GL.glSecondaryColor3ubEXT((byte)(col.r * 255), 
@@ -982,41 +989,6 @@ public class Image implements Renderable {
     } 
 
 	/**
-	 * Get a sub-part of this image. Note that the create image retains a reference to the
-	 * image data so should anything change it will affect sub-images too.
-	 * 
-	 * @param x The x coordinate of the sub-image
-	 * @param y The y coordinate of the sub-image
-	 * @param width The width of the sub-image
-	 * @param height The height of the sub-image
-	 * @return The image represent the sub-part of this image
-	 */
-	public Image getSubImage(int x,int y,int width,int height) {
-		init();
-		
-		float newTextureOffsetX = ((x / (float) this.width) * textureWidth) + textureOffsetX;
-		float newTextureOffsetY = ((y / (float) this.height) * textureHeight) + textureOffsetY;
-		float newTextureWidth = ((width / (float) this.width) * textureWidth);
-		float newTextureHeight = ((height / (float) this.height) * textureHeight);
-		
-		Image sub = new Image();
-		sub.inited = true;
-		sub.texture = this.texture;
-		sub.textureOffsetX = newTextureOffsetX;
-		sub.textureOffsetY = newTextureOffsetY;
-		sub.textureWidth = newTextureWidth;
-		sub.textureHeight = newTextureHeight;
-		
-		sub.width = width;
-		sub.height = height;
-		sub.ref = ref;
-		sub.centerX = width / 2f;
-		sub.centerY = height / 2f;
-		
-		return sub;
-	}
-
-	/**
 	 * Draw a section of this image at a particular location and scale on the screen
 	 * 
 	 * @param x The x position to draw the image
@@ -1047,7 +1019,9 @@ public class Image implements Renderable {
 	}
 	
 	/**
-	 * Draw a section of this image at a particular location and scale on the screen
+	 * Draw a section of this image at a particular location and scale on the screen.
+	 * 
+	 * The center of rotation will be scaled according to the new size of the image.
 	 * 
 	 * @param x The x position to draw the image
 	 * @param y The y position to draw the image
@@ -1073,6 +1047,9 @@ public class Image implements Renderable {
 		filter.bind();
 		texture.bind();
 		
+        float centerX = this.centerX * ((x2-x) / getWidth());
+        float centerY = this.centerY * ((y2-y) / getHeight());
+       
         GL.glTranslatef(x, y, 0);
         if (angle != 0) {
 	        GL.glTranslatef(centerX, centerY, 0.0f); 
@@ -1162,7 +1139,10 @@ public class Image implements Renderable {
 	
 	/**
 	 * Draw the image in a warper rectangle. The effects this can 
-	 * have are many and varied, might be interesting though.
+	 * have are many and varied, might be interesting though. 
+	 * Note that this won't scale the centerX/centerY according
+	 * to the given points; this should be done before hand with
+	 * setCenterOfRotation.
 	 * 
 	 * @param x1 The top left corner x coordinate
 	 * @param y1 The top left corner y coordinate
@@ -1228,13 +1208,53 @@ public class Image implements Renderable {
 	
 	/**
 	 * Get a copy of this image. This is a shallow copy and does not 
-	 * duplicate image adata.
+	 * duplicate image data -- corner colors, alpha and rotation are
+	 * also not copied.
 	 * 
 	 * @return The copy of this image
 	 */
 	public Image copy() {
 		init();
-		return getSubImage(0,0,width,height);
+		return getScaledCopy(width,height);
+	}
+
+	/**
+	 * Get a sub-part of this image. Note that the create image retains a reference to the
+	 * image data so should anything change it will affect sub-images too.
+	 * 
+	 * The center of rotation will be the center of the new sub-image (half width/height).
+	 * 
+	 * @param x The x coordinate of the sub-image
+	 * @param y The y coordinate of the sub-image
+	 * @param width The width of the sub-image
+	 * @param height The height of the sub-image
+	 * @return The image represent the sub-part of this image
+	 */
+	public Image getSubImage(int x,int y,int width,int height) {
+		init();
+		
+		float newTextureOffsetX = ((x / (float) this.width) * textureWidth) + textureOffsetX;
+		float newTextureOffsetY = ((y / (float) this.height) * textureHeight) + textureOffsetY;
+		float newTextureWidth = ((width / (float) this.width) * textureWidth);
+		float newTextureHeight = ((height / (float) this.height) * textureHeight);
+		
+		Image sub = new Image();
+		sub.inited = true;
+		sub.filter = this.filter;
+		sub.texture = this.texture;
+		sub.ref = ref;
+		
+		sub.textureOffsetX = newTextureOffsetX;
+		sub.textureOffsetY = newTextureOffsetY;
+		sub.textureWidth = newTextureWidth;
+		sub.textureHeight = newTextureHeight;
+		
+		sub.width = width;
+		sub.height = height;
+		sub.centerX = width / 2f;
+		sub.centerY = height / 2f;
+		
+		return sub;
 	}
 
 	/**
@@ -1249,7 +1269,8 @@ public class Image implements Renderable {
 	}
 	
 	/**
-	 * Get a scaled copy of this image
+	 * Get a scaled copy of this image with its center of rotation 
+	 * scaled accordingly.
 	 * 
 	 * @param width The width of the copy
 	 * @param height The height of the copy
@@ -1257,11 +1278,20 @@ public class Image implements Renderable {
 	 */
 	public Image getScaledCopy(int width, int height) {
 		init();
-		Image image = copy();
+		Image image = new Image();
+		image.inited = true;
+		image.filter = this.filter;
+		image.texture = this.texture;
+		image.ref = ref;
+		
+		image.textureOffsetX = this.textureOffsetX;
+		image.textureOffsetY = this.textureOffsetY;
+		image.textureWidth = this.textureWidth;
+		image.textureHeight = this.textureHeight;
 		image.width = width;
 		image.height = height;
-		image.centerX = width / 2f;
-		image.centerY = height / 2f;
+		image.centerX = this.centerX * (width / this.width);
+		image.centerY = this.centerY * (height / this.height);
 		return image;
 	}
 	
