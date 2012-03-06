@@ -111,7 +111,7 @@ public class BufferedImageUtil {
 		ByteBuffer textureBuffer = data.imageToByteBuffer(bufferedImage, false, false, null);
 		texture.setTextureHeight(data.getTexHeight());
 		texture.setTextureWidth(data.getTexWidth());
-		texture.setAlpha(data.getFormat().hasAlpha());
+		texture.setImageFormat(data.getFormat());
 		
 		if (target == SGL.GL_TEXTURE_2D) {
 			Renderer.get().glTexParameteri(target, SGL.GL_TEXTURE_MIN_FILTER, minFilter);
