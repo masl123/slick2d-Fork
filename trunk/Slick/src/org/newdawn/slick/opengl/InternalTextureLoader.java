@@ -51,10 +51,22 @@ public class InternalTextureLoader {
     /** True if we should hold texture data */
     private boolean holdTextureData;
     
+    /** Useful for debugging; keeps track of the current number of active textures. */
+    int textureCount = 0;
+    
     /** 
      * Create a new texture loader based on the game panel
      */
     private InternalTextureLoader() {
+    }
+    
+    /**
+     * Returns the current number of active textures. 
+     * 
+     * @return the number of active OpenGL textures
+     */
+    public int getTextureCount() {
+    	return textureCount;
     }
     
     /**
@@ -87,7 +99,7 @@ public class InternalTextureLoader {
     }
     
     /**
-     * Remove a particular named image from the cache
+     * Remove a particular named image from the cache (does not release the OpenGL texture)
      * 
      * @param name The name of the image to be cleared
      */
@@ -97,7 +109,7 @@ public class InternalTextureLoader {
     }
     
     /**
-     * Clear out the cached textures
+     * Clear out the cached textures (does not release the OpenGL textures)
      */
     public void clear() {
     	texturesLinear.clear();
@@ -291,7 +303,7 @@ public class InternalTextureLoader {
         LoadableImageData imageData = ImageDataFactory.getImageDataFor(resourceName);
     	textureBuffer = imageData.loadImage(new BufferedInputStream(in), flipped, transparent);
 
-        int textureID = createTextureID(); 
+        int textureID = createTextureID();        
         TextureImpl texture = new TextureImpl(resourceName, target, textureID); 
         // bind this texture 
         GL.glBindTexture(target, textureID); 
@@ -344,6 +356,7 @@ public class InternalTextureLoader {
                       srcPixelFormat, 
                       SGL.GL_UNSIGNED_BYTE, 
                       textureBuffer); 
+        textureCount++;
         
         return texture; 
     } 
@@ -448,7 +461,7 @@ public class InternalTextureLoader {
                       srcPixelFormat, 
                       SGL.GL_UNSIGNED_BYTE, 
                       textureBuffer); 
-        
+        textureCount++;
         return texture; 
     } 
     
@@ -524,7 +537,7 @@ public class InternalTextureLoader {
                       srcPixelFormat, 
                       SGL.GL_UNSIGNED_BYTE, 
                       textureBuffer); 
-        
+        textureCount++;
         return textureID; 
 	}
 }

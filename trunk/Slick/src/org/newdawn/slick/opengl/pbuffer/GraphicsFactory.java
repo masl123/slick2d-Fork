@@ -37,7 +37,7 @@ public class GraphicsFactory {
 		init = true;
 		
 		if (fbo) {
-			fbo = GLContext.getCapabilities().GL_EXT_framebuffer_object;
+			fbo = GLContext.getCapabilities().GL_EXT_framebuffer_object || GLContext.getCapabilities().OpenGL30;
 		}
 		pbuffer = (Pbuffer.getCapabilities() & Pbuffer.PBUFFER_SUPPORTED) != 0;
 		pbufferRT = (Pbuffer.getCapabilities() & Pbuffer.RENDER_TEXTURE_SUPPORTED) != 0;

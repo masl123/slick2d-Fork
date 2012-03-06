@@ -41,7 +41,7 @@ public class TextureImpl implements Texture {
     /** The GL target type */
     private int target; 
     /** The GL texture ID */
-    private int textureID;
+    private int textureID = 0;
     /** The height of the image */
     private int height;
     /** The width of the image */
@@ -250,7 +250,10 @@ public class TextureImpl implements Texture {
 	 * @see org.newdawn.slick.opengl.Texture#release()
 	 */
     public void release() {
-        IntBuffer texBuf = createIntBuffer(1); 
+    	if (textureID == 0) 
+    		return;
+    	
+    	IntBuffer texBuf = createIntBuffer(1); 
         texBuf.put(textureID);
         texBuf.flip();
         
@@ -265,6 +268,8 @@ public class TextureImpl implements Texture {
         } else {
         	InternalTextureLoader.get().clear(ref);
         }
+        textureID = 0;
+        InternalTextureLoader.get().textureCount--;
     }
     
     /**
@@ -341,7 +346,8 @@ public class TextureImpl implements Texture {
 	}
 	
 	/**
-	 * Reload this texture
+	 * Reload this texture (setTextureData() and release() should be called before reloading data).
+	 * This is generally done internally (i.e. for use with context switches in Android / OpenGL ES).
 	 */
 	public void reload() {
 		if (reloadData != null) {

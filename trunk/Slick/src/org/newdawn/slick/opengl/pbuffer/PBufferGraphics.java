@@ -34,7 +34,7 @@ public class PBufferGraphics extends Graphics {
 	 * @throws SlickException Indicates a failure to use pbuffers
 	 */
 	public PBufferGraphics(Image image) throws SlickException {
-		super(image.getTexture().getTextureWidth(), image.getTexture().getTextureHeight());
+		super(InternalTextureLoader.get2Fold(image.getWidth()), InternalTextureLoader.get2Fold(image.getHeight()));
 		this.image = image;
 		
 		Log.debug("Creating pbuffer(rtt) "+image.getWidth()+"x"+image.getHeight());
@@ -66,7 +66,9 @@ public class PBufferGraphics extends Graphics {
 			initGL();
 			GL.glBindTexture(GL11.GL_TEXTURE_2D, tex.getTextureID());
 			pbuffer.releaseTexImage(Pbuffer.FRONT_LEFT_BUFFER);
-			image.draw(0,0);
+			
+			if (image.getTexture()!=null)
+				image.draw(0,0);
 			image.setTexture(tex);
 			
 			Display.makeCurrent();

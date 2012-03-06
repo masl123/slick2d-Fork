@@ -33,7 +33,7 @@ public class PBufferUniqueGraphics extends Graphics {
 	 * @throws SlickException Indicates a failure to use pbuffers
 	 */
 	public PBufferUniqueGraphics(Image image) throws SlickException {
-		super(image.getTexture().getTextureWidth(), image.getTexture().getTextureHeight());
+		super(InternalTextureLoader.get2Fold(image.getWidth()), InternalTextureLoader.get2Fold(image.getHeight()));
 		this.image = image;
 		
 		Log.debug("Creating pbuffer(unique) "+image.getWidth()+"x"+image.getHeight());
@@ -58,11 +58,13 @@ public class PBufferUniqueGraphics extends Graphics {
 			pbuffer.makeCurrent();
 
 			initGL();
-			image.draw(0,0);
-			GL11.glBindTexture(GL11.GL_TEXTURE_2D, tex.getTextureID());
-			GL11.glCopyTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, 0, 0, 
-								  tex.getTextureWidth(), 
-								  tex.getTextureHeight(), 0);
+			if (image.getTexture()!=null) {
+				image.draw(0,0);
+				GL11.glBindTexture(GL11.GL_TEXTURE_2D, tex.getTextureID());
+				GL11.glCopyTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, 0, 0, 
+									  tex.getTextureWidth(), 
+									  tex.getTextureHeight(), 0);
+			}
 			image.setTexture(tex);
 			
 			Display.makeCurrent();

@@ -3,6 +3,7 @@ package org.newdawn.slick;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.newdawn.slick.opengl.EmptyImageData;
 import org.newdawn.slick.opengl.ImageData;
 import org.newdawn.slick.opengl.InternalTextureLoader;
 import org.newdawn.slick.opengl.Texture;
@@ -18,6 +19,54 @@ import org.newdawn.slick.util.Log;
  * @author kevin
  */
 public class Image implements Renderable {
+	
+	/**
+	 * Creates an image intended for use with offscreen rendering. Only one
+	 * texture is created (the FBO/PBuffer-bound texture which will be used
+	 * internally). This replaces the old way of offscreen rendering, using
+	 * <tt>new Image(width, height)</tt>.
+	 * 
+	 * @param width
+	 *            the width of the offscreen image
+	 * @param height
+	 *            the height of the offscreen image
+	 * @param filter
+	 *            the desired filtering (FILTER_NEAREST or FILTER_LINEAR)
+	 * @return a new Image prepared for use with getGraphics()
+	 * @throws SlickException
+	 *             if there was a problem constructing the offscreen image
+	 */
+	public static Image createOffscreenImage(int width, int height, int filter) throws SlickException {
+		// this is a bit hackish; ideally FBO/Image should be restructured into
+		// a more OpenGL-like design...
+		// but that would introduce a major overhaul of the library
+		Image i = new Image();
+		i.width = width;
+		i.height = height;
+		i.filter = filter;
+		i.inited = true; // so that initImpl() only gets called once
+		i.getGraphics(); // will call Image.setTexture, which calls reinit
+		return i;
+	}
+
+	/**
+	 * Creates an image intended for use with offscreen rendering with linear
+	 * filtering. Only one texture is created (the FBO/PBuffer-bound texture
+	 * which will be used internally). This replaces the old way of offscreen
+	 * rendering, using <tt>new Image(width, height)</tt>.
+	 * 
+	 * @param width
+	 *            the width of the offscreen image
+	 * @param height
+	 *            the height of the offscreen image
+	 * @return a new Image prepared for use with getGraphics()
+	 * @throws SlickException
+	 *             if there was a problem constructing the offscreen image
+	 */
+	public static Image createOffscreenImage(int width, int height) throws SlickException {
+		return createOffscreenImage(width, height, Image.FILTER_LINEAR);
+	}
+
 	/** The top left corner identifier */
 	public static final int TOP_LEFT = 0;
 	/** The top right corner identifier */
@@ -31,11 +80,11 @@ public class Image implements Renderable {
 	protected static SGL GL = Renderer.get();
 	
 	/** The sprite sheet currently in use */
-	protected static Image inUse;
-	/** Use Linear Filtering */
-	public static final int FILTER_LINEAR = 1;
-	/** Use Nearest Filtering */
-	public static final int FILTER_NEAREST = 2;
+	protected static Texture inUse;
+	/** Use Linear Filtering (same as SGL.GL_LINEAR) */
+	public static final int FILTER_LINEAR = SGL.GL_LINEAR;
+	/** Use Nearest Filtering (same as SGL.GL_NEAREST) */
+	public static final int FILTER_NEAREST = SGL.GL_NEAREST;
 	
 	/** The OpenGL texture for this image */
 	protected Texture texture;
@@ -75,7 +124,7 @@ public class Image implements Renderable {
     /** The colours for each of the corners */
     protected Color[] corners;
     /** The OpenGL max filter */
-    private int filter = SGL.GL_LINEAR;
+    private int filter = FILTER_LINEAR;
     
     /** True if the image should be flipped vertically */
     private boolean flipped;
@@ -97,8 +146,8 @@ public class Image implements Renderable {
 		this.textureOffsetX = other.textureOffsetX;
 		this.textureOffsetY = other.textureOffsetY;
 	
-		centerX = width / 2;
-		centerY = height / 2;
+		centerX = width / 2f;
+		centerY = height / 2f;
 		inited = true;
 	}
 	
@@ -176,7 +225,7 @@ public class Image implements Renderable {
 	 * @throws SlickException Indicates a failure to load the image
 	 */
 	public Image(String ref, boolean flipped, int f, Color transparent) throws SlickException {
-		this.filter = f == FILTER_LINEAR ? SGL.GL_LINEAR : SGL.GL_NEAREST;
+		this.filter = f;
 		this.transparent = transparent;
 		this.flipped = flipped;
 		
@@ -203,7 +252,7 @@ public class Image implements Renderable {
 	 * @param f The filtering mode to use
 	 */
 	public void setFilter(int f) {
-		this.filter = f == FILTER_LINEAR ? SGL.GL_LINEAR : SGL.GL_NEAREST;
+		this.filter = f;
 
 		texture.bind();
 		GL.glTexParameteri(SGL.GL_TEXTURE_2D, SGL.GL_TEXTURE_MIN_FILTER, filter); 
@@ -230,17 +279,7 @@ public class Image implements Renderable {
 	 * @throws SlickException Indicates a failure to create the underlying resource
 	 */
 	public Image(int width, int height, int f) throws SlickException {
-		ref = super.toString();
-		this.filter = f == FILTER_LINEAR ? SGL.GL_LINEAR : SGL.GL_NEAREST;
-		
-		try {
-			texture = InternalTextureLoader.get().createTexture(width, height, this.filter);
-		} catch (IOException e) {
-			Log.error(e);
-			throw new SlickException("Failed to create empty image "+width+"x"+height);
-		}
-		
-		init();
+		this(new EmptyImageData(width, height), f);
 	}
 	
 	/**
@@ -306,7 +345,7 @@ public class Image implements Renderable {
 	 */
 	public Image(ImageData data, int f) {
 		try {
-			this.filter = f == FILTER_LINEAR ? SGL.GL_LINEAR : SGL.GL_NEAREST;
+			this.filter = f;
 			texture = InternalTextureLoader.get().getTexture(data, this.filter);
 			ref = texture.toString();
 		} catch (IOException e) {
@@ -455,7 +494,7 @@ public class Image implements Renderable {
 	 * @throws SlickException Indicates a failure to load the image
 	 */
 	private void load(InputStream in, String ref, boolean flipped, int f, Color transparent) throws SlickException {
-		this.filter = f == FILTER_LINEAR ? SGL.GL_LINEAR : SGL.GL_NEAREST;
+		this.filter = f;
 		
 		try {
 			this.ref = ref;
@@ -481,7 +520,7 @@ public class Image implements Renderable {
 	}
 
 	/**
-	 * Reinitialise internal data
+	 * Reinitialise internal data.
 	 */
 	protected void reinit() {
 		inited = false;
@@ -508,8 +547,8 @@ public class Image implements Renderable {
 		
 		initImpl();
 	
-		centerX = width / 2;
-		centerY = height / 2;
+		centerX = width / 2f;
+		centerY = height / 2f;
 	}
 
 	/**
@@ -533,7 +572,7 @@ public class Image implements Renderable {
 	 * @param y The y coordinate to place the image's center at
 	 */
 	public void drawCentered(float x, float y) {
-		draw(x-(getWidth()/2),y-(getHeight()/2));
+		draw(x-(getWidth()/2f),y-(getHeight()/2f));
 	}
 	
 	/**
@@ -704,6 +743,7 @@ public class Image implements Renderable {
 	 * @param filter The colour filter to apply
 	 */
     public void drawSheared(float x,float y, float hshear, float vshear, Color filter) { 
+    	init();
     	if (alpha != 1) {
     		if (filter == null) {
     			filter = Color.white;
@@ -726,8 +766,6 @@ public class Image implements Renderable {
         }
         
         GL.glBegin(SGL.GL_QUADS); 
-        	init();
-		
 		    GL.glTexCoord2f(textureOffsetX, textureOffsetY);
 			GL.glVertex3f(0, 0, 0);
 			GL.glTexCoord2f(textureOffsetX, textureOffsetY + textureHeight);
@@ -757,6 +795,7 @@ public class Image implements Renderable {
 	 * @param filter The color to filter with while drawing
 	 */
     public void draw(float x,float y,float width,float height,Color filter) { 
+    	init();
     	if (alpha != 1) {
     		if (filter == null) {
     			filter = Color.white;
@@ -803,12 +842,13 @@ public class Image implements Renderable {
 	}
 	
 	/**
-	 * Set the centre of the rotation when applied to this image
+	 * Set the centre of the rotation when applied to this image.
 	 * 
 	 * @param x The x coordinate of center of rotation relative to the top left corner of the image
 	 * @param y The y coordinate of center of rotation relative to the top left corner of the image
 	 */
 	public void setCenterOfRotation(float x, float y) {
+		init();
 		centerX = x;
 		centerY = y;
 	}
@@ -970,8 +1010,8 @@ public class Image implements Renderable {
 		sub.width = width;
 		sub.height = height;
 		sub.ref = ref;
-		sub.centerX = width / 2;
-		sub.centerY = height / 2;
+		sub.centerX = width / 2f;
+		sub.centerY = height / 2f;
 		
 		return sub;
 	}
@@ -1088,7 +1128,8 @@ public class Image implements Renderable {
 	 * @param filter The colour filter to apply when drawing
 	 */
 	public void drawEmbedded(float x, float y, float x2, float y2, float srcx, float srcy, float srcx2, float srcy2, Color filter) {
-		if (filter != null) {
+		init();
+    	if (filter != null) {
 			filter.bind();
 		}
 		
@@ -1219,8 +1260,8 @@ public class Image implements Renderable {
 		Image image = copy();
 		image.width = width;
 		image.height = height;
-		image.centerX = width / 2;
-		image.centerY = height / 2;
+		image.centerX = width / 2f;
+		image.centerY = height / 2f;
 		return image;
 	}
 	
@@ -1263,7 +1304,7 @@ public class Image implements Renderable {
 	 * @see #startUse
 	 */
 	public void endUse() {
-		if (inUse != this) {
+		if (inUse != texture) {
 			throw new RuntimeException("The sprite sheet is not currently in use");
 		}
 		inUse = null;
@@ -1280,7 +1321,7 @@ public class Image implements Renderable {
 		if (inUse != null) {
 			throw new RuntimeException("Attempt to start use of a sprite sheet before ending use with another - see endUse()");
 		}
-		inUse = this;
+		inUse = texture;
 		init();
 
 		Color.white.bind();
@@ -1307,11 +1348,15 @@ public class Image implements Renderable {
 	}
 	
 	/**
-	 * Set the texture used by this image
+	 * Set the texture used by this image; if the given
+	 * texture is different from the current texture,
+	 * this image is assumed to be no longer destroyed.
 	 * 
 	 * @param texture The texture used by this image
 	 */
 	public void setTexture(Texture texture) {
+		if (texture!=this.texture)
+			destroyed = false;
 		this.texture = texture;
 		reinit();
 	}
@@ -1388,7 +1433,7 @@ public class Image implements Renderable {
 		if (isDestroyed()) {
 			return;
 		}
-		
+		flushPixelData();
 		destroyed = true;
 		texture.release();
 		GraphicsFactory.releaseGraphicsForImage(this);
