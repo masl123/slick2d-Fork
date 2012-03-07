@@ -9,6 +9,7 @@ import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.awt.image.RasterFormatException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -39,8 +40,12 @@ public class BMFontUtil {
 	public BMFontUtil (UnicodeFont unicodeFont) {
 		this.unicodeFont = unicodeFont;
 	}
+	
+	public void save(File f) throws IOException, SlickException {
+		save(f, true);
+	}
 
-	public void save (File outputBMFontFile) throws IOException, SlickException {
+	public void save (File outputBMFontFile, boolean flip) throws IOException, SlickException {
 		File outputDir = outputBMFontFile.getParentFile();
 		String outputName = outputBMFontFile.getName();
 		if (outputName.endsWith(".fnt")) outputName = outputName.substring(0, outputName.length() - 4);
@@ -160,15 +165,23 @@ public class BMFontUtil {
 			} finally {
 				imageOutput.close();
 			}
+			// TOOD: fix this for all systems!
 			// Flip output image.
 			Image image = new ImageIcon(imageOutputFile.getAbsolutePath()).getImage();
 			BufferedImage bufferedImage = new BufferedImage(image.getWidth(null), image.getHeight(null), BufferedImage.TYPE_INT_ARGB);
 			Graphics g = bufferedImage.getGraphics();
 			g.drawImage(image, 0, 0, null);
-			AffineTransform tx = AffineTransform.getScaleInstance(-1, 1);
-			tx.translate(0, -image.getHeight(null));
-			AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
-			bufferedImage = op.filter(bufferedImage, null);
+			
+			if (flip) { //flips horizontally
+				try {
+					AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
+                    tx.translate(0, -image.getHeight(null));
+                    AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+                    bufferedImage = op.filter(bufferedImage, null);
+				} catch (RasterFormatException ex) {
+					Log.error(ex);
+				}
+			}
 			ImageIO.write(bufferedImage, "png", imageOutputFile);
 
 			pageIndex++;
