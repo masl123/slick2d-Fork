@@ -480,9 +480,7 @@ public class Image implements Renderable {
 	 * @throws SlickException Indicates a failure to create a graphics context
 	 */
 	public Graphics getGraphics() throws SlickException {
-		Graphics g = GraphicsFactory.getGraphicsForImage(this);
-		Graphics.setCurrent(g);
-		return g;
+		return GraphicsFactory.getGraphicsForImage(this);
 	}
 	
 	/**
