@@ -252,12 +252,7 @@ public class TextureImpl implements Texture {
     public void release() {
     	if (textureID == 0) 
     		return;
-    	
-    	IntBuffer texBuf = createIntBuffer(1); 
-        texBuf.put(textureID);
-        texBuf.flip();
-        
-    	GL.glDeleteTextures(texBuf);
+    	InternalTextureLoader.deleteTextureID(textureID);
     	
         if (lastBind == this) {
         	bindNone();
@@ -269,7 +264,6 @@ public class TextureImpl implements Texture {
         	InternalTextureLoader.get().clear(ref);
         }
         textureID = 0;
-        InternalTextureLoader.get().textureCount--;
     }
     
     /**
@@ -346,8 +340,8 @@ public class TextureImpl implements Texture {
 	}
 	
 	/**
-	 * Reload this texture (setTextureData() and release() should be called before reloading data).
-	 * This is generally done internally (i.e. for use with context switches in Android / OpenGL ES).
+	 * Reload this texture if it is holding texture data (release() should be called before this).
+	 * This is generally done internally (i.e. for use with context switches in Android / OpenGL ES)
 	 */
 	public void reload() {
 		if (reloadData != null) {
