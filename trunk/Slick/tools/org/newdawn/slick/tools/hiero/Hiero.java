@@ -248,7 +248,7 @@ public class Hiero extends JFrame {
 				if (saveBmFontFile != null) {
 					try {
 						BMFontUtil bmFont = new BMFontUtil(unicodeFont);
-						bmFont.save(saveBmFontFile, flipImageMenuItem.isSelected());
+						bmFont.save(saveBmFontFile, flipImageMenuItem.isSelected(), antiAliasTextMenuItem.isSelected());
 					} catch (Exception ex) {
 						Log.error("Error saving BMFont files: " + saveBmFontFile.getAbsolutePath(), ex);
 					} finally {

@@ -125,6 +125,7 @@ public class UnicodeFont implements org.newdawn.slick.Font {
 	/** The eldest display list  */
 	private DisplayList eldestDisplayList;
 	
+	
 	/** The map fo the display list generated and cached - modified to allow removal of the oldest entry */
 	private final LinkedHashMap displayLists = new LinkedHashMap(DISPLAY_LIST_CACHE_SIZE, 1, true) {
 		protected boolean removeEldestEntry (Entry eldest) {
@@ -237,6 +238,7 @@ public class UnicodeFont implements org.newdawn.slick.Font {
 		font = baseFont.deriveFont(attributes);
 
 		FontMetrics metrics = GlyphPage.getScratchGraphics().getFontMetrics(font);
+		
 		ascent = metrics.getAscent();
 		descent = metrics.getDescent();
 		leading = metrics.getLeading();

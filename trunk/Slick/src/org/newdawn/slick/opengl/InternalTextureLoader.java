@@ -26,6 +26,45 @@ import org.newdawn.slick.util.ResourceLoader;
  * @author kevin
  */
 public class InternalTextureLoader {
+
+    /** Useful for debugging; keeps track of the current number of active textures. */
+    static int textureCount = 0;
+
+    /**
+     * Returns the current number of active textures. Calling InternalTextureLoader.createTextureID
+     * increases this number. Calling TextureImpl.release or InternalTextureLoader.deleteTextureID 
+     * decreases this number.
+     * 
+     * @return the number of active OpenGL textures
+     */
+    public static int getTextureCount() {
+    	return textureCount;
+    }
+
+    /**
+     * Create a new texture ID; will increase the value for getTextureCount.
+     *
+     * @return A new texture ID
+     */
+    public static int createTextureID() { 
+       IntBuffer tmp = createIntBuffer(1); 
+       GL.glGenTextures(tmp);
+       textureCount++;
+       return tmp.get(0);
+    } 
+    
+    /** 
+     * Used internally; call TextureImpl.release. 
+     * @param id the id of the OpenGL texture 
+     */
+    public static void deleteTextureID(int id) {
+    	IntBuffer texBuf = createIntBuffer(1); 
+        texBuf.put(id);
+        texBuf.flip();
+    	GL.glDeleteTextures(texBuf);
+    	textureCount--;
+    }
+    
 	/** The renderer to use for all GL operations */
 	protected static SGL GL = Renderer.get();
 	/** The standard texture loaded used everywhere */
@@ -51,22 +90,10 @@ public class InternalTextureLoader {
     /** True if we should hold texture data */
     private boolean holdTextureData;
     
-    /** Useful for debugging; keeps track of the current number of active textures. */
-    int textureCount = 0;
-    
     /** 
      * Create a new texture loader based on the game panel
      */
     private InternalTextureLoader() {
-    }
-    
-    /**
-     * Returns the current number of active textures. 
-     * 
-     * @return the number of active OpenGL textures
-     */
-    public int getTextureCount() {
-    	return textureCount;
     }
     
     /**
@@ -123,17 +150,6 @@ public class InternalTextureLoader {
     	dstPixelFormat = SGL.GL_RGBA16;
     }
     
-    /**
-     * Create a new texture ID 
-     *
-     * @return A new texture ID
-     */
-    public static int createTextureID() 
-    { 
-       IntBuffer tmp = createIntBuffer(1); 
-       GL.glGenTextures(tmp); 
-       return tmp.get(0);
-    } 
     
     /**
      * Get a texture from a specific file
@@ -277,7 +293,7 @@ public class InternalTextureLoader {
         
         return tex;
     }
-
+    
     /**
      * Get a texture from a image file
      * 
@@ -356,8 +372,6 @@ public class InternalTextureLoader {
                       srcPixelFormat, 
                       SGL.GL_UNSIGNED_BYTE, 
                       textureBuffer); 
-        textureCount++;
-        
         return texture; 
     } 
 
@@ -460,8 +474,7 @@ public class InternalTextureLoader {
                       0, 
                       srcPixelFormat, 
                       SGL.GL_UNSIGNED_BYTE, 
-                      textureBuffer); 
-        textureCount++;
+                      textureBuffer);
         return texture; 
     } 
     
@@ -508,7 +521,8 @@ public class InternalTextureLoader {
     }
 
     /**
-     * Reload a given texture blob
+     * Reload a given texture blob; used internally with setHoldTextureData. 
+     * Call TextureImpl.reload instead.
      * 
      * @param texture The texture being reloaded
      * @param srcPixelFormat The source pixel format
@@ -536,8 +550,7 @@ public class InternalTextureLoader {
                       0, 
                       srcPixelFormat, 
                       SGL.GL_UNSIGNED_BYTE, 
-                      textureBuffer); 
-        textureCount++;
+                      textureBuffer);
         return textureID; 
 	}
 }
