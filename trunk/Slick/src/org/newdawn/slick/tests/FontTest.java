@@ -44,6 +44,18 @@ public class FontTest extends BasicGame {
 	 * @see org.newdawn.slick.BasicGame#render(org.newdawn.slick.GameContainer, org.newdawn.slick.Graphics)
 	 */
 	public void render(GameContainer container, Graphics g) {
+		if (g.getFont() instanceof AngelCodeFont) {
+			AngelCodeFont f = (AngelCodeFont)g.getFont();
+			String t = "testing baseline";
+			float w = f.getWidth(t);
+			g.drawString(t, 400, 500);
+			g.setColor(Color.red);
+			int ascent = f.getAscent();
+			g.drawLine(400, 500+ascent, 400+w, 500+ascent);
+		}
+		
+		
+		
 		font.drawString(80, 5, "A Font Example", Color.red);
 		font.drawString(100, 32, "We - AV - Here is a more complete line that hopefully");
 		font.drawString(100, 36 + font.getHeight("We Here is a more complete line that hopefully"), 
@@ -63,7 +75,7 @@ public class FontTest extends BasicGame {
 		g.setColor(Color.white);
 		g.drawRect(500,300+font.getYOffset(testStr),font.getWidth(testStr),font.getHeight(testStr)-font.getYOffset(testStr));
 	}
-
+	
 	/**
 	 * @see org.newdawn.slick.BasicGame#update(org.newdawn.slick.GameContainer, int)
 	 */

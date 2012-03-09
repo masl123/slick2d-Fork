@@ -11,6 +11,7 @@ import org.newdawn.slick.opengl.TextureImpl;
 import org.newdawn.slick.opengl.pbuffer.GraphicsFactory;
 import org.newdawn.slick.opengl.renderer.Renderer;
 import org.newdawn.slick.opengl.renderer.SGL;
+import org.newdawn.slick.util.FastTrig;
 import org.newdawn.slick.util.Log;
 
 /**
@@ -597,9 +598,85 @@ public class Image implements Renderable {
 		init();
 		draw(x,y,width,height, filter);
 	}
-
+	
 	/**
-	 * Draw this image as part of a collection of images
+	 * Unlike the other drawEmbedded methods, this allows for the embedded image
+	 * to be rotated. This is done by applying a rotation transform to each 
+	 * vertex of the image. This ignroes getRotation but depends on the 
+	 * center x/y (scaled accordingly to the new width/height).
+	 * 
+	 * @param x the x to render the image at
+	 * @param y the y to render the image at
+	 * @param width the new width to render the image
+	 * @param height the new height to render the image
+	 * @param rotation the rotation to render the image, using getCenterOfRotationX/Y
+	 */
+	public void drawEmbedded(float x, float y, float width, float height, float rotation) {
+		if (rotation==0) {
+			drawEmbedded(x, y, width, height);
+			return;
+		}
+		init();
+		float scaleX = width/this.width;
+		float scaleY = height/this.height;
+		
+		float cx = getCenterOfRotationX()*scaleX;
+		float cy = getCenterOfRotationY()*scaleY;
+
+		float p1x = -cx;
+		float p1y = -cy;
+		float p2x = width - cx;
+		float p2y = -cy;
+		float p3x = width - cx;
+		float p3y = height - cy;
+		float p4x = -cx;
+		float p4y = height - cy;
+
+		double rad = Math.toRadians(rotation);
+		final float cos = (float) FastTrig.cos(rad);
+		final float sin = (float) FastTrig.sin(rad);
+
+		float tx = getTextureOffsetX();
+		float ty = getTextureOffsetY();
+		float tw = getTextureWidth();
+		float th = getTextureHeight();
+
+		float x1 = (cos * p1x - sin * p1y) + cx; // TOP LEFT
+		float y1 = (sin * p1x + cos * p1y) + cy;
+		float x2 = (cos * p4x - sin * p4y) + cx; // BOTTOM LEFT
+		float y2 = (sin * p4x + cos * p4y) + cy;
+		float x3 = (cos * p3x - sin * p3y) + cx; // BOTTOM RIGHT
+		float y3 = (sin * p3x + cos * p3y) + cy;
+		float x4 = (cos * p2x - sin * p2y) + cx; // TOP RIGHT
+		float y4 = (sin * p2x + cos * p2y) + cy;
+		if (corners == null) {
+		    GL.glTexCoord2f(tx, ty);
+			GL.glVertex3f(x+x1, y+y1, 0);
+			GL.glTexCoord2f(tx, ty + tw);
+			GL.glVertex3f(x+x2, y+y2, 0);
+			GL.glTexCoord2f(tx + tw, ty + th);
+			GL.glVertex3f(x+x3, y+y3, 0);
+			GL.glTexCoord2f(tx + tw, ty);
+			GL.glVertex3f(x+x4, y+y4, 0);
+		} else {
+			corners[TOP_LEFT].bind();
+		    GL.glTexCoord2f(tx, ty);
+			GL.glVertex3f(x+x1, y+y1, 0);
+			corners[BOTTOM_LEFT].bind();
+			GL.glTexCoord2f(tx, ty + th);
+			GL.glVertex3f(x+x2, y+y2, 0);
+			corners[BOTTOM_RIGHT].bind();
+			GL.glTexCoord2f(tx + tw, ty + th);
+			GL.glVertex3f(x+x3, y+y3, 0);
+			corners[TOP_RIGHT].bind();
+			GL.glTexCoord2f(tx + tw, ty);
+			GL.glVertex3f(x+x4, y+y4, 0);
+		}
+	}
+
+	
+	/**
+	 * Draw this image as part of a collection of images (rotation is ignored).
 	 * 
 	 * @param x The x location to draw the image at
 	 * @param y The y location to draw the image at
@@ -634,6 +711,70 @@ public class Image implements Renderable {
 			GL.glTexCoord2f(textureOffsetX + textureWidth, textureOffsetY);
 			GL.glVertex3f(x + width, y, 0);
 		}
+	}
+
+	/**
+	 * Draw a section of this image at a particular location and scale on the screen, while this
+	 * is image is "in use", i.e. between calls to startUse and endUse  (rotation is ignored).
+	 * 
+	 * @param x The x position to draw the image
+	 * @param y The y position to draw the image
+	 * @param x2 The x position of the bottom right corner of the drawn image
+	 * @param y2 The y position of the bottom right corner of the drawn image
+	 * @param srcx The x position of the rectangle to draw from this image (i.e. relative to this image)
+	 * @param srcy The y position of the rectangle to draw from this image (i.e. relative to this image)
+	 * @param srcx2 The x position of the bottom right cornder of rectangle to draw from this image (i.e. relative to this image)
+	 * @param srcy2 The t position of the bottom right cornder of rectangle to draw from this image (i.e. relative to this image)
+	 */
+	public void drawEmbedded(float x, float y, float x2, float y2, float srcx, float srcy, float srcx2, float srcy2) {
+		drawEmbedded(x,y,x2,y2,srcx,srcy,srcx2,srcy2,null);
+	}
+
+	/**
+	 * Draw a section of this image at a particular location and scale on the screen, while this
+	 * is image is "in use", i.e. between calls to startUse and endUse  (rotation is ignored).
+	 * 
+	 * @param x The x position to draw the image
+	 * @param y The y position to draw the image
+	 * @param x2 The x position of the bottom right corner of the drawn image
+	 * @param y2 The y position of the bottom right corner of the drawn image
+	 * @param srcx The x position of the rectangle to draw from this image (i.e. relative to this image)
+	 * @param srcy The y position of the rectangle to draw from this image (i.e. relative to this image)
+	 * @param srcx2 The x position of the bottom right cornder of rectangle to draw from this image (i.e. relative to this image)
+	 * @param srcy2 The t position of the bottom right cornder of rectangle to draw from this image (i.e. relative to this image)
+	 * @param filter The colour filter to apply when drawing
+	 */
+	public void drawEmbedded(float x, float y, float x2, float y2, float srcx, float srcy, float srcx2, float srcy2, Color filter) {
+		init();
+		if (filter != null) {
+			filter.bind();
+		}
+		
+		float mywidth = x2 - x;
+		float myheight = y2 - y;
+		float texwidth = srcx2 - srcx;
+		float texheight = srcy2 - srcy;
+	
+		float newTextureOffsetX = (((srcx) / (width)) * textureWidth)
+				+ textureOffsetX;
+		float newTextureOffsetY = (((srcy) / (height)) * textureHeight)
+				+ textureOffsetY;
+		float newTextureWidth = ((texwidth) / (width))
+				* textureWidth;
+		float newTextureHeight = ((texheight) / (height))
+				* textureHeight;
+	
+		GL.glTexCoord2f(newTextureOffsetX, newTextureOffsetY);
+		GL.glVertex3f(x,y, 0.0f);
+		GL.glTexCoord2f(newTextureOffsetX, newTextureOffsetY
+				+ newTextureHeight);
+		GL.glVertex3f(x,(y + myheight), 0.0f);
+		GL.glTexCoord2f(newTextureOffsetX + newTextureWidth,
+				newTextureOffsetY + newTextureHeight);
+		GL.glVertex3f((x + mywidth),(y + myheight), 0.0f);
+		GL.glTexCoord2f(newTextureOffsetX + newTextureWidth,
+				newTextureOffsetY);
+		GL.glVertex3f((x + mywidth),y, 0.0f);
 	}
 
 	/**
@@ -1071,70 +1212,6 @@ public class Image implements Renderable {
 //		GL.glBegin(SGL.GL_QUADS);
 //		drawEmbedded(x,y,x2,y2,srcx,srcy,srcx2,srcy2);
 //		GL.glEnd();
-	}
-	
-	/**
-	 * Draw a section of this image at a particular location and scale on the screen, while this
-	 * is image is "in use", i.e. between calls to startUse and endUse.
-	 * 
-	 * @param x The x position to draw the image
-	 * @param y The y position to draw the image
-	 * @param x2 The x position of the bottom right corner of the drawn image
-	 * @param y2 The y position of the bottom right corner of the drawn image
-	 * @param srcx The x position of the rectangle to draw from this image (i.e. relative to this image)
-	 * @param srcy The y position of the rectangle to draw from this image (i.e. relative to this image)
-	 * @param srcx2 The x position of the bottom right cornder of rectangle to draw from this image (i.e. relative to this image)
-	 * @param srcy2 The t position of the bottom right cornder of rectangle to draw from this image (i.e. relative to this image)
-	 */
-	public void drawEmbedded(float x, float y, float x2, float y2, float srcx, float srcy, float srcx2, float srcy2) {
-		drawEmbedded(x,y,x2,y2,srcx,srcy,srcx2,srcy2,null);
-	}
-	
-	/**
-	 * Draw a section of this image at a particular location and scale on the screen, while this
-	 * is image is "in use", i.e. between calls to startUse and endUse.
-	 * 
-	 * @param x The x position to draw the image
-	 * @param y The y position to draw the image
-	 * @param x2 The x position of the bottom right corner of the drawn image
-	 * @param y2 The y position of the bottom right corner of the drawn image
-	 * @param srcx The x position of the rectangle to draw from this image (i.e. relative to this image)
-	 * @param srcy The y position of the rectangle to draw from this image (i.e. relative to this image)
-	 * @param srcx2 The x position of the bottom right cornder of rectangle to draw from this image (i.e. relative to this image)
-	 * @param srcy2 The t position of the bottom right cornder of rectangle to draw from this image (i.e. relative to this image)
-	 * @param filter The colour filter to apply when drawing
-	 */
-	public void drawEmbedded(float x, float y, float x2, float y2, float srcx, float srcy, float srcx2, float srcy2, Color filter) {
-		init();
-    	if (filter != null) {
-			filter.bind();
-		}
-		
-		float mywidth = x2 - x;
-		float myheight = y2 - y;
-		float texwidth = srcx2 - srcx;
-		float texheight = srcy2 - srcy;
-
-		float newTextureOffsetX = (((srcx) / (width)) * textureWidth)
-				+ textureOffsetX;
-		float newTextureOffsetY = (((srcy) / (height)) * textureHeight)
-				+ textureOffsetY;
-		float newTextureWidth = ((texwidth) / (width))
-				* textureWidth;
-		float newTextureHeight = ((texheight) / (height))
-				* textureHeight;
-
-		GL.glTexCoord2f(newTextureOffsetX, newTextureOffsetY);
-		GL.glVertex3f(x,y, 0.0f);
-		GL.glTexCoord2f(newTextureOffsetX, newTextureOffsetY
-				+ newTextureHeight);
-		GL.glVertex3f(x,(y + myheight), 0.0f);
-		GL.glTexCoord2f(newTextureOffsetX + newTextureWidth,
-				newTextureOffsetY + newTextureHeight);
-		GL.glVertex3f((x + mywidth),(y + myheight), 0.0f);
-		GL.glTexCoord2f(newTextureOffsetX + newTextureWidth,
-				newTextureOffsetY);
-		GL.glVertex3f((x + mywidth),y, 0.0f);
 	}
 	
 	/**
