@@ -282,6 +282,14 @@ public class AngelCodeFont implements Font {
 			throw new SlickException("Failed to parse font file: " + fntFile);
 		}
 	}
+	
+	/**
+	 * Returns the sprite sheet image that holds all of the images. 
+	 * @return the image for this bitmap font
+	 */
+	public Image getImage() {
+		return fontImage;
+	}
 
 	/** 
 	 * If a font has the same glyphs for upper and lower case text, we can
@@ -639,12 +647,12 @@ public class AngelCodeFont implements Font {
 		public final short yoffset;
 		/** The amount to move the current position after drawing the character */
 		public final short xadvance;
-		/** The image containing the character */
-		public Image image;
+		/** The sub-image containing the character */
+		public final Image image;
 		/** The display list index for this character */
-		public short dlIndex;
+		protected short dlIndex;
 		/** The kerning info for this character */
-		public short[] kerning;
+		protected short[] kerning;
 
 		protected Glyph(short id, short x, short y, short width, short height,
 				short xoffset, short yoffset, short xadvance, Image image) {
@@ -657,16 +665,6 @@ public class AngelCodeFont implements Font {
 			this.yoffset = yoffset;
 			this.xadvance = xadvance;
 			this.image = image;
-		}
-		
-		/**
-		 * Returns the sub-image for this glyph, which can then be used along with
-		 * drawEmbedded.
-		 * 
-		 * @return the sub image for this glyph
-		 */
-		public Image getImage() {
-			return image;
 		}
 
 		/**

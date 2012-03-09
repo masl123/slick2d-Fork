@@ -23,6 +23,11 @@ public class FontTest extends BasicGame {
 	private AngelCodeFont font2;
 	/** The image of the font to compare against */
 	private Image image;
+	/** Custom rendering */
+	private float widthMult = 1;
+	/** Custom rendering */
+	private float width = 0;
+	
 	
 	/**
 	 * Create a new test for font rendering
@@ -74,12 +79,65 @@ public class FontTest extends BasicGame {
 		font.drawString(500, 300, testStr);
 		g.setColor(Color.white);
 		g.drawRect(500,300+font.getYOffset(testStr),font.getWidth(testStr),font.getHeight(testStr)-font.getYOffset(testStr));
+		
+		g.setColor(Color.white);
+		drawTextRotated(font, "custom font render", 500, 350, width);
+		g.drawRect(500, 350, width, font.getLineHeight());
+	}
+	
+	/** 
+	 * Advanced text rendering using AngelCodeFont's getGlyph method.
+	 * @param font
+	 * @param text
+	 * @param x
+	 * @param y
+	 * @param maxWidth
+	 */
+	private void drawTextRotated(AngelCodeFont font, CharSequence text, float x, float y, float maxWidth) {
+		AngelCodeFont.Glyph lastDef = null;
+		
+		//important: start and end the sheet if we are using drawEmbedded
+		font.getImage().startUse();
+		
+		float startX = x;
+		x = 0;
+		for (int i=0; i<text.length(); i++) {
+			char c = text.charAt(i);
+			if (c=='\n') {
+				y += font.getLineHeight();
+				x = 0;
+			}
+			AngelCodeFont.Glyph def = font.getGlyph(c);
+			//glyph not found .. :(
+			if (def==null)
+				continue;
+			//get kerning info
+			if (lastDef!=null) {
+				x += lastDef.getKerning(c);
+			}
+			lastDef = def;
+			
+			if (def.xoffset + def.width + x > maxWidth) 
+				break;
+			
+			//handle drawing here. let's rotate it eh?
+			Image subImage = def.image;
+			subImage.drawEmbedded(startX + x + def.xoffset, y + def.yoffset, def.width, def.height);
+			
+			//push next advance
+			x += def.xadvance;
+		}
+		
+		font.getImage().endUse();
 	}
 	
 	/**
 	 * @see org.newdawn.slick.BasicGame#update(org.newdawn.slick.GameContainer, int)
 	 */
 	public void update(GameContainer container, int delta) throws SlickException {
+		width += delta * 0.1f * widthMult;
+		if (width > 250 || width < 0)
+			widthMult = widthMult==1 ? -1 : 1;
 	}
 	
 	/**
