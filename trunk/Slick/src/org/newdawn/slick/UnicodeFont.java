@@ -25,6 +25,7 @@ import org.newdawn.slick.opengl.Texture;
 import org.newdawn.slick.opengl.TextureImpl;
 import org.newdawn.slick.opengl.renderer.Renderer;
 import org.newdawn.slick.opengl.renderer.SGL;
+import org.newdawn.slick.util.Log;
 import org.newdawn.slick.util.ResourceLoader;
 
 /**
@@ -942,7 +943,7 @@ public class UnicodeFont implements org.newdawn.slick.Font {
 	 * @return The reference to the font file that the kerning was loaded from
 	 */
 	public String getFontFile () {
-		if (ttfFileRef == null) {
+		if (ttfFileRef == null || ttfFileRef.length()==0) {
 			// Worst case if this UnicodeFont was loaded without a ttfFileRef, try to get the font file from Sun's classes.
 			try {
 				Object font2D = Class.forName("sun.font.FontManager").getDeclaredMethod("getFont2D", new Class[] {Font.class})
@@ -951,6 +952,7 @@ public class UnicodeFont implements org.newdawn.slick.Font {
 				platNameField.setAccessible(true);
 				ttfFileRef = (String)platNameField.get(font2D);
 			} catch (Throwable ignored) {
+				//System.out.println(ignored.getMessage());
 			}
 			if (ttfFileRef == null) ttfFileRef = "";
 		}
