@@ -86,12 +86,8 @@ public class FontTest extends BasicGame {
 	}
 	
 	/** 
-	 * Advanced text rendering using AngelCodeFont's getGlyph method.
-	 * @param font
-	 * @param text
-	 * @param x
-	 * @param y
-	 * @param maxWidth
+	 * Advanced text rendering using AngelCodeFont's getGlyph method, allowing us to efficiently
+	 * render a single line of text within the given bounds.
 	 */
 	private void drawTextRotated(AngelCodeFont font, CharSequence text, float x, float y, float maxWidth) {
 		AngelCodeFont.Glyph lastDef = null;
@@ -103,10 +99,6 @@ public class FontTest extends BasicGame {
 		x = 0;
 		for (int i=0; i<text.length(); i++) {
 			char c = text.charAt(i);
-			if (c=='\n') {
-				y += font.getLineHeight();
-				x = 0;
-			}
 			AngelCodeFont.Glyph def = font.getGlyph(c);
 			//glyph not found .. :(
 			if (def==null)
@@ -117,10 +109,11 @@ public class FontTest extends BasicGame {
 			}
 			lastDef = def;
 			
+			//if it's over our defined width
 			if (def.xoffset + def.width + x > maxWidth) 
 				break;
 			
-			//handle drawing here. let's rotate it eh?
+			//handle drawing here
 			Image subImage = def.image;
 			subImage.drawEmbedded(startX + x + def.xoffset, y + def.yoffset, def.width, def.height);
 			
