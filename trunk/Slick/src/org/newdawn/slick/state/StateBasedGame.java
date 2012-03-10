@@ -34,8 +34,6 @@ public abstract class StateBasedGame implements Game, InputListener {
 	private Transition enterTransition;
 	/** The transition being used to leave the state */
 	private Transition leaveTransition;
-	/** Global datastore, useful for using data between states without replication */
-	private HashMap<Object, Object> datastore = new HashMap<Object, Object>();
 	
 	/**
 	 * Create a new state based game
@@ -538,51 +536,6 @@ public abstract class StateBasedGame implements Game, InputListener {
 		}
 		
 		currentState.mouseWheelMoved(newValue);
-	}
-	
-	/**
-	 * Puts data to global datastore
-	 * 
-	 * @author liamzebedee
-	 * @param key The key to put the data as
-	 * @param data The data associated with the key
-	 */
-	public void pushData(Object key, Object data){
-		this.datastore.put(key, data);
-	}
-	
-	/**
-	 * Gets data from the global datastore
-	 * 
-	 * @author liamzebedee
-	 * @param key The key which is used for retrieving the data
-	 * @return The data associated with this key, or null if none was found
-	 */
-	public Object getData(Object key){
-		return this.datastore.get(key);
-	}
-	
-	/**
-	 * Pulls and removes data from the global datastore
-	 * 
-	 * @author liamzebedee
-	 * @param key The key the data is associated with
-	 * @return The data associated with this key, or null if there is none
-	 */
-	public Object pullData(Object key){
-		Object data = this.datastore.get(key);
-		this.datastore.remove(key);
-		return data;
-	}
-	
-	/**
-	 * Removes data from the global datastore
-	 * 
-	 * @author liamzebedee
-	 * @param key The key the data is associated with
-	 */
-	public void removeData(Object key){
-		this.datastore.remove(key);
 	}
 
 }
