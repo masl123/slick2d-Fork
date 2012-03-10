@@ -23,9 +23,9 @@ public class FontTest extends BasicGame {
 	private AngelCodeFont font2;
 	/** The image of the font to compare against */
 	private Image image;
-	/** Custom rendering */
+	/** Whether to increase or decrease our width box for the custom text rendering. */
 	private float widthMult = 1;
-	/** Custom rendering */
+	/** The width we want to contain the text inside. */
 	private float width = 0;
 	
 	
@@ -81,15 +81,15 @@ public class FontTest extends BasicGame {
 		g.drawRect(500,300+font.getYOffset(testStr),font.getWidth(testStr),font.getHeight(testStr)-font.getYOffset(testStr));
 		
 		g.setColor(Color.white);
-		drawTextRotated(font, "custom font render", 500, 350, width);
+		drawTextBox(font, "custom font render", 500, 350, width);
 		g.drawRect(500, 350, width, font.getLineHeight());
 	}
 	
 	/** 
-	 * Advanced text rendering using AngelCodeFont's getGlyph method, allowing us to efficiently
-	 * render a single line of text within the given bounds.
+	 * An example of advanced text rendering using AngelCodeFont's getGlyph method, 
+	 * allowing us to efficiently render a single line of text within the given bounds.
 	 */
-	private void drawTextRotated(AngelCodeFont font, CharSequence text, float x, float y, float maxWidth) {
+	private void drawTextBox(AngelCodeFont font, CharSequence text, float x, float y, float maxWidth) {
 		AngelCodeFont.Glyph lastDef = null;
 		
 		//important: start and end the sheet if we are using drawEmbedded
@@ -99,10 +99,12 @@ public class FontTest extends BasicGame {
 		x = 0;
 		for (int i=0; i<text.length(); i++) {
 			char c = text.charAt(i);
+			
 			AngelCodeFont.Glyph def = font.getGlyph(c);
 			//glyph not found .. :(
 			if (def==null)
 				continue;
+			
 			//get kerning info
 			if (lastDef!=null) {
 				x += lastDef.getKerning(c);
