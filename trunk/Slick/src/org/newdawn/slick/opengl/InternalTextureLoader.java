@@ -13,6 +13,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.ContextCapabilities;
+import org.lwjgl.opengl.EXTFramebufferObject;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL14;
+import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengl.GLContext;
 import org.newdawn.slick.opengl.renderer.Renderer;
 import org.newdawn.slick.opengl.renderer.SGL;
 import org.newdawn.slick.util.ResourceLoader;
@@ -29,6 +35,35 @@ public class InternalTextureLoader {
 
     /** Useful for debugging; keeps track of the current number of active textures. */
     static int textureCount = 0;
+    
+    private static boolean forcePOT = true;
+    
+    public static boolean isPowerOfTwo(int n) {
+        return (n & -n) == n;
+    }
+
+	
+    /**
+     * Returns true if we are forcing loaded image data into power-of-two OpenGL textures (by default,
+     * this is true). If non-power-of-two textures is not supported in hardware (i.e. isNPOTSupported
+     * returns false), then the image data will be forced into POT textures regardless of isForcePOTSize().
+     *   
+     * @return true if we should ensure POT sized textures, flase if we should attempt to use NPOT if supported
+     */
+    public static boolean isForcePOT() {
+    	return forcePOT;
+    }
+    
+	/**
+     * Set whether we are forcing loaded image data into power-of-two OpenGL textures (by default,
+     * this is true). If non-power-of-two textures is not supported in hardware (i.e. isNPOTSupported
+     * returns false), then the image data will be forced into POT textures regardless of isForcePOTSize().
+     *   
+     * @param b true if we should ensure POT sized textures, flase if we should attempt to use NPOT if supported
+     */
+    public static void setForcePOT(boolean b) {
+    	forcePOT = b;
+    }
 
     /**
      * Returns the current number of active textures. Calling InternalTextureLoader.createTextureID
@@ -65,6 +100,31 @@ public class InternalTextureLoader {
     	textureCount--;
     }
     
+	/**
+	 * Slick uses glGenerateMipmap() or GL14.GL_GENERATE_MIPMAP to automatically
+	 * build mipmaps (for advanced users). If neither of these versions are supported,
+	 * the GL_EXT_framebuffer_object is used as a fallback, and if that extension is also
+	 * missing, this method returns false.
+	 *  
+	 * @return whether the version is >= 1.4 or GL_EXT_framebuffer_object extension exists
+	 */
+	public static boolean isGenerateMipmapSupported() {
+		return GLContext.getCapabilities().OpenGL14 || GLContext.getCapabilities().GL_EXT_framebuffer_object;
+	}
+
+	/**
+	 * Returns true if non-power-of-two textures are supported in hardware via the
+	 * GL_ARB_texture_non_power_of_two extension. Non-power-of-two texture loading
+	 * is not a current feature of Slick, although it is planned.
+	 * 
+	 * @return true if the extension is listed
+	 */
+	public static boolean isNPOTSupported() {
+		//don't check GL20, nvidia/ATI usually don't advertise this extension
+		//if it means requiring software fallback
+		return GLContext.getCapabilities().GL_ARB_texture_non_power_of_two;
+	}
+	
 	/** The renderer to use for all GL operations */
 	protected static SGL GL = Renderer.get();
 	/** The standard texture loaded used everywhere */
@@ -281,8 +341,7 @@ public class InternalTextureLoader {
         
         TextureImpl tex = getTexture(in, resourceName,
                          SGL.GL_TEXTURE_2D, 
-                         filter, 
-                         filter, flipped, transparent);
+                         filter, filter, flipped, transparent);
         
         tex.setCacheName(resName);
         if (holdTextureData) {
@@ -294,26 +353,10 @@ public class InternalTextureLoader {
         return tex;
     }
     
-    /**
-     * Get a texture from a image file
-     * 
-     * @param in The stream from which we can load the image
-     * @param resourceName The name to give this image in the internal cache
-     * @param flipped True if we should flip the image on the y-axis while loading
-     * @param target The texture target we're loading this texture into
-     * @param minFilter The scaling down filter
-     * @param magFilter The scaling up filter
-	 * @param transparent The colour to interpret as transparent or null if none
-     * @return The texture loaded
-     * @throws IOException Indicates a failure to load the image
-     */
-    private TextureImpl getTexture(InputStream in, 
-    						  String resourceName, 
-                              int target, 
-                              int magFilter, 
-                              int minFilter, boolean flipped, int[] transparent) throws IOException 
-    { 
-        // create the texture ID for this texture 
+    private TextureImpl getTexture(InputStream in, String resourceName, 
+				            int target,  int minFilter,  int magFilter, 
+				    		boolean flipped, int[] transparent) throws IOException {
+    	// create the texture ID for this texture 
         ByteBuffer textureBuffer;
         
         LoadableImageData imageData = ImageDataFactory.getImageDataFor(resourceName);
@@ -373,8 +416,129 @@ public class InternalTextureLoader {
                       SGL.GL_UNSIGNED_BYTE, 
                       textureBuffer); 
         return texture; 
-    } 
+    }
+    
+    /**
+     * An advanced texture loading method providing more parameters for glTexImage2D. 
+     * The created texture will not be placed in the cache.
+     * 
+     * If genMipmaps is true, the loader will attempt to automatically build mipmaps
+     * with either GL30.glGenerateMipmap() or GL14.GL_GENERATE_MIPMAP. If the GL version
+     * is less than 1.4, then no mipmaps will be built and instead the magFilter (one
+     * of GL_LINEAR or GL_NEAREST) will be used for both minification and magnification.
+     * Users can determine mipmap generation support with isGenerateMipmapSupported().
+     * 
+     * If the internalFormat is not null, then that will override the default pixel
+     * format described by this InternalTextureLoader (either GL_RGBA16 or GL_RGBA8
+     * depending on the is16BitMode() value). This parameter can be independent
+     * of the format of the file -- OpenGL will convert the file's format (e.g. BGRA)
+     * to the given internalFormat (e.g. RGB).
+     * 
+     * After calling this, the texture will be bound and the target (e.g. GL_TEXTURE_2D)
+     * will be enabled. If you are using a higher priority target, such as 3D textures,
+     * you should disable that afterwards to ensure compatibility with Slick.
+     * 
+     * @param data the image data holding width, height, format
+     * @param buffer the actual data to send to GL
+     * @param ref The name to give the TextureImpl
+     * @param target The texture target we're loading this texture into
+     * @param minFilter The scaling down filter
+     * @param magFilter The scaling up filter
+     * @param genMipmaps true to generate mipmaps (failure will fallback to using magFilter)
+     * @param internalFormat the internal format of the texture (or null for default)
+     * @return The texture loaded
+     * @throws IOException Indicates a failure to load the image
+     */
+    public TextureImpl createTexture(ImageData data, ByteBuffer buffer,
+						  String ref, 
+                          int target, 
+                          int minFilter, 
+                          int magFilter, 
+                          boolean genMipmaps,
+                          ImageData.Format internalFormat) throws IOException { 
+    	int textureID = createTextureID();        
+        TextureImpl texture = new TextureImpl(ref, target, textureID); 
+        // bind this texture 
+        GL.glBindTexture(target, textureID); 
+ 
+        int width = data.getWidth();
+        int height = data.getHeight();
+        int texWidth = width;
+        int texHeight = height;
+        
+        boolean usePOT = !isNPOTSupported() || isForcePOT();
+        if (usePOT) {
+            texWidth = get2Fold(width);
+            texHeight = get2Fold(height);
+        }
 
+        int max = GL11.glGetInteger(SGL.GL_MAX_TEXTURE_SIZE);
+        if (texWidth>max || texHeight>max) 
+        	throw new IOException("Attempt to allocate a texture to big for the current hardware");
+        
+        ImageData.Format dataFormat = data.getFormat();
+        int dstFmt = internalFormat!=null ? internalFormat.getOGLType() : dstPixelFormat; 
+        int srcFmt = dataFormat.getOGLType();
+
+        texture.setTextureWidth(texWidth);
+        texture.setTextureHeight(texHeight);
+        texture.setWidth(width);
+        texture.setHeight(height);
+        //even though it might really be RGBA16/8, user will expect comparability with Format constants
+        texture.setImageFormat(internalFormat!=null ? internalFormat : ImageData.Format.RGBA); 
+        
+        if (holdTextureData) {
+        	// TODO: fix the reload functionality; right now it causes problems and 
+        	// should probably just be removed or reworked
+            int componentCount = dataFormat.getColorComponents();
+        	texture.setTextureData(srcFmt, componentCount, minFilter, magFilter, buffer);
+        }
+        
+        ContextCapabilities cx = GLContext.getCapabilities();
+        if (genMipmaps && !isGenerateMipmapSupported()) { //nothing for auto mipmap gen
+        	minFilter = magFilter;
+        	genMipmaps = false;
+        }
+        
+        GL.glTexParameteri(target, SGL.GL_TEXTURE_MIN_FILTER, minFilter); 
+        GL.glTexParameteri(target, SGL.GL_TEXTURE_MAG_FILTER, magFilter); 
+        
+        //if we are < 3.0 and have no FBO support, fall back to GL_GENERATE_MIPMAP
+        if (genMipmaps && !cx.OpenGL30 && !cx.GL_EXT_framebuffer_object) { 
+        	GL.glTexParameteri(target, GL14.GL_GENERATE_MIPMAP, GL11.GL_TRUE);
+        	genMipmaps = false;
+        }
+        
+        //if we only need one call to glTexImage2D
+        if (texWidth==width && texHeight==height) {
+        	GL.glTexImage2D(target, 0, dstFmt, texWidth, texHeight, 
+        			0, srcFmt, SGL.GL_UNSIGNED_BYTE, buffer);
+        } else {
+        	//Slick2D decodes NPOT image data into padded byte buffers.
+        	//Once we make the shift to decoding NPOT image data, then we can clean this up
+        	GL.glTexImage2D(target, 0, dstFmt, texWidth, texHeight, 
+        			0, srcFmt, SGL.GL_UNSIGNED_BYTE, buffer);
+        	
+        	//first create the full texture
+        	//we could also use a null ByteBuffer but this seems to be buggy with certain machines
+//        	ByteBuffer empty = BufferUtils.createByteBuffer(texWidth * texHeight * 4);
+//        	GL.glTexImage2D(target, 0, dstFmt, texWidth, texHeight,
+//        			0, SGL.GL_RGBA, SGL.GL_UNSIGNED_BYTE, empty);
+//        	//then upload the sub image
+//        	GL.glTexSubImage2D(target, 0, 0, 0, width, height, srcFmt, SGL.GL_UNSIGNED_BYTE, buffer);
+        }
+        
+        // TODO: abstract mipmap generation in SGL
+        if (genMipmaps) {
+        	GL11.glEnable(target); //fixes ATI bug
+        	if (cx.OpenGL30)
+        		GL30.glGenerateMipmap(target);
+        	else
+        		EXTFramebufferObject.glGenerateMipmapEXT(target);
+        }
+        return texture; 
+    } 
+    
     /**
      * Create an empty texture
      * 
@@ -485,6 +649,7 @@ public class InternalTextureLoader {
      * @return The power of 2
      */
     public static int get2Fold(int fold) {
+    	//new algorithm? -> return 1 << (32 - Integer.numberOfLeadingZeros(n-1));
         int ret = 2;
         while (ret < fold) {
             ret *= 2;
