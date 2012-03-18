@@ -26,7 +26,9 @@ import org.xml.sax.SAXException;
  * 
  * http://mapeditor.org/
  * 
- * @author kevin
+ * @author kevin 
+ * @author Tiago Costa
+ * @author Loads of others!
  */
 public class TiledMap {
 	/** Indicates if we're running on a headless system */
@@ -63,6 +65,15 @@ public class TiledMap {
 	protected ArrayList<Layer> layers = new ArrayList<Layer>();
 	/** The list of object-groups defined in the map */
 	protected ArrayList<ObjectGroup> objectGroups = new ArrayList<ObjectGroup>();
+
+	// TODO Change to enums? Maybe more efficient and designed for this purpose?
+	/** Indicates a orthogonal map */
+	protected static final int ORTHOGONAL = 1;
+	/** Indicates an isometric map */
+	protected static final int ISOMETRIC = 2;
+
+	/** The orientation of this map */
+	protected int orientation;
 
 	/** True if we want to load tilesets - including their image data */
 	private boolean loadTileSets = true;
@@ -307,8 +318,8 @@ public class TiledMap {
 	 * @param x The x location to render at 
 	 * @param y The y location to render at
 	 */
-	public void render(int x,int y) {
-		render(x,y,0,0,width,height,false);
+	public void render(int x, int y) {
+		render(x, y, 0, 0, width, height, false);
 	}
 
 	/**
@@ -336,6 +347,7 @@ public class TiledMap {
 		render(x,y,sx,sy,width,height,false);
 	}
 
+	
 	/**
 	 * Render a section of the tile map
 	 * 
@@ -349,31 +361,157 @@ public class TiledMap {
 	 * @param lineByLine True if we should render line by line, i.e. giving us a chance
 	 * to render something else between lines (@see {@link #renderedLine(int, int, int)}
 	 */
-	public void render(int x,int y,int sx,int sy,int width,int height,int l,boolean lineByLine) {
+	public void render(int x, int y,
+			int sx,
+			int sy,
+			int width,
+			int height,
+			int l, boolean lineByLine) {
 		Layer layer = (Layer) layers.get(l);
-		for (int ty=0;ty<height;ty++) {
-			layer.render(x,y,sx,sy,width,ty,lineByLine, tileWidth, tileHeight);
+
+		switch (orientation) {
+		case ORTHOGONAL:
+			for (int ty = 0; ty < height; ty++) {
+				layer.render(x, y,
+						sx,
+						sy,
+						width, ty,
+						lineByLine, tileWidth,
+						tileHeight);
+			}
+			break;
+		case ISOMETRIC:
+			renderIsometricMap(x, y, sx, sy, width, height, layer, lineByLine);
+			break;
+		default:
+			// log error or something
 		}
 	}
-
+	
 	/**
 	 * Render a section of the tile map
 	 * 
-	 * @param x The x location to render at
-	 * @param y The y location to render at
-	 * @param sx The x tile location to start rendering
-	 * @param sy The y tile location to start rendering
-	 * @param width The width of the section to render (in tiles)
-	 * @param height The height of the secton to render (in tiles)
-	 * @param lineByLine True if we should render line by line, i.e. giving us a chance
-	 * to render something else between lines (@see {@link #renderedLine(int, int, int)}
+	 * @param x
+	 *            The x location to render at
+	 * @param y
+	 *            The y location to render at
+	 * @param sx
+	 *            The x tile location to start rendering
+	 * @param sy
+	 *            The y tile location to start rendering
+	 * @param width
+	 *            The width of the section to render (in tiles)
+	 * @param height
+	 *            The height of the secton to render (in tiles)
+	 * @param lineByLine
+	 *            True if we should render line by line, i.e. giving us a chance
+	 *            to render something else between lines (@see
+	 *            {@link #renderedLine(int, int, int)}
 	 */
-	public void render(int x,int y,int sx,int sy,int width,int height, boolean lineByLine) {
-		for (int ty=0;ty<height;ty++) {
-			for (int i=0;i<layers.size();i++) {
-				Layer layer = (Layer) layers.get(i);
-				layer.render(x,y,sx,sy,width, ty,lineByLine, tileWidth, tileHeight);
+	public void render(int x, int y, int sx, int sy, int width, int height,
+			boolean lineByLine) {
+		switch (orientation) {
+		case ORTHOGONAL:
+			for (int ty = 0; ty < height; ty++) {
+				for (int i = 0; i < layers.size(); i++) {
+					Layer layer = (Layer) layers.get(i);
+					layer.render(x, y, sx, sy, width, ty, lineByLine,
+							tileWidth, tileHeight);
+				}
 			}
+			break;
+		case ISOMETRIC:
+			renderIsometricMap(x, y, sx, sy, width, height, null, lineByLine);
+			break;
+		default:
+			// log error or something
+		}
+	}
+	
+	/**
+	 * Render of isometric map renders.
+	 * 
+	 * @param x
+	 *            The x location to render at
+	 * @param y
+	 *            The y location to render at
+	 * @param sx
+	 *            The x tile location to start rendering
+	 * @param sy
+	 *            The y tile location to start rendering
+	 * @param width
+	 *            The width of the section to render (in tiles)
+	 * @param height
+	 *            The height of the section to render (in tiles)
+	 * @param layer
+	 *            if this is null all layers are rendered, if not only the
+	 *            selected layer is renderered
+	 * @param lineByLine
+	 *            True if we should render line by line, i.e. giving us a chance
+	 *            to render something else between lines (@see
+	 *            {@link #renderedLine(int, int, int)}
+	 * 
+	 *            TODO: [Isometric map] Render stuff between lines, concept of
+	 *            line differs from ortho maps
+	 */
+	protected void renderIsometricMap(int x, int y, int sx, int sy, int width,
+			int height, Layer layer, boolean lineByLine) {
+		ArrayList drawLayers = layers;
+		if (layer != null) {
+			drawLayers = new ArrayList();
+			drawLayers.add(layer);
+		}
+
+		int maxCount = width * height;
+		int allCount = 0;
+
+		boolean allProcessed = false;
+
+		int initialLineX = x;
+		int initialLineY = y;
+
+		int startLineTileX = 0;
+		int startLineTileY = 0;
+		while (!allProcessed) {
+
+			int currentTileX = startLineTileX;
+			int currentTileY = startLineTileY;
+			int currentLineX = initialLineX;
+
+			int min = 0;
+			if (height > width)
+				min = (startLineTileY < width - 1) ? startLineTileY : (width
+						- currentTileX < height) ? width - currentTileX - 1
+						: width - 1;
+			else
+				min = (startLineTileY < height - 1) ? startLineTileY : (width
+						- currentTileX < height) ? width - currentTileX - 1
+						: height - 1;
+
+			for (int burner = 0; burner <= min; currentTileX++, currentTileY--, burner++) {
+				for (int layerIdx = 0; layerIdx < drawLayers.size(); layerIdx++) {
+					Layer currentLayer = (Layer) drawLayers.get(layerIdx);
+					currentLayer.render(currentLineX, initialLineY,
+							currentTileX, currentTileY, 1, 0, lineByLine,
+							tileWidth, tileHeight);
+				}
+				currentLineX += tileWidth;
+
+				allCount++;
+			}
+
+			if (startLineTileY < (height - 1)) {
+				startLineTileY += 1;
+				initialLineX -= tileWidth / 2;
+				initialLineY += tileHeight / 2;
+			} else {
+				startLineTileX += 1;
+				initialLineX += tileWidth / 2;
+				initialLineY += tileHeight / 2;
+			}
+
+			if (allCount >= maxCount)
+				allProcessed = true;
 		}
 	}
 
@@ -409,12 +547,13 @@ public class TiledMap {
 
 			Document doc = builder.parse(in);
 			Element docElement = doc.getDocumentElement();
-
-			String orient = docElement.getAttribute("orientation");
-			if (!orient.equals("orthogonal")) {
-				throw new SlickException("Only orthogonal maps supported, found: "+orient);
+			
+			if (docElement.getAttribute("orientation").equals("orthogonal")) {
+				orientation = ORTHOGONAL;
+			} else {
+				orientation = ISOMETRIC;
 			}
-
+			
 			width = Integer.parseInt(docElement.getAttribute("width"));
 			height = Integer.parseInt(docElement.getAttribute("height"));
 			tileWidth = Integer.parseInt(docElement.getAttribute("tilewidth"));
