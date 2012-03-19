@@ -55,29 +55,28 @@ public class MipmapTest extends BasicGame {
 	}
 	
 	private Image createMipmapImage(String ref) throws SlickException {
+		// this implementation is subject to change...
 		try {
-			//Implementation is subject to change; future revisions will 
-			//address ease of use
-			
 			InputStream in = ResourceLoader.getResourceAsStream(ref);
-	        LoadableImageData imageData = ImageDataFactory.getImageDataFor(ref);
-	    	ByteBuffer buf = imageData.loadImage(new BufferedInputStream(in), false, null);			
+			LoadableImageData imageData = ImageDataFactory.getImageDataFor(ref);
+			ByteBuffer buf = imageData.loadImage(new BufferedInputStream(in),
+					false, null);
 			ImageData.Format fmt = imageData.getFormat();
 			int minFilter = GL11.GL_LINEAR_MIPMAP_LINEAR;
 			int magFilter = GL11.GL_LINEAR;
-			
+
 			Texture tex = InternalTextureLoader.get().createTexture(
-								imageData, 			   // the image data holding width/height/format
-								buf,				   // the buffer of data
-								ref, 				   // the ref for the TextureImpl
-								GL11.GL_TEXTURE_2D,    // what you will usually use
-								minFilter, magFilter,  // min and mag filters
-								true, 				   // generate mipmaps automatically 
-								fmt);				   // the internal format for the texture
+					imageData, // the image data holding width/height/format
+					buf, // the buffer of data
+					ref, // the ref for the TextureImpl
+					GL11.GL_TEXTURE_2D, // what you will usually use
+					minFilter, magFilter, // min and mag filters
+					true, // generate mipmaps automatically
+					fmt); // the internal format for the texture
 			return new Image(tex);
 		} catch (IOException e) {
 			Log.error("error loading image", e);
-			throw new SlickException("error loading image "+e.getMessage());
+			throw new SlickException("error loading image " + e.getMessage());
 		}
 	}
 	

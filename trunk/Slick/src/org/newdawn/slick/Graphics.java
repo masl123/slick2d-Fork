@@ -1464,11 +1464,13 @@ public class Graphics {
 	 *            The y position to copy from
 	 */
 	public void copyArea(Image target, int x, int y) {
+		predraw();
 		int format = target.getTexture().hasAlpha() ? SGL.GL_RGBA : SGL.GL_RGB;
 		target.bind();
 		GL.glCopyTexImage2D(SGL.GL_TEXTURE_2D, 0, format, x, screenHeight - (y + target.getHeight()), target.getTexture().getTextureWidth(),
 				target.getTexture().getTextureHeight(), 0);
 		target.ensureInverted();
+		postdraw();
 	}
 	
 	/**
