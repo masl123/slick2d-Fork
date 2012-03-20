@@ -1456,7 +1456,7 @@ public class Graphics {
 	
 	/**
 	 * Copy an area of the rendered screen into an image. The width and height of the area are assumed to match that of
-	 * the image
+	 * the image, and the destination offset is (0, 0).
 	 * 
 	 * @param target
 	 *            The target image
@@ -1469,6 +1469,23 @@ public class Graphics {
 		copyArea(target, x, y, 0, 0, target.getWidth(), target.getHeight());
 	}
 	
+	/**
+	 * Copies a sub-section of the rendered screen into the given image. The x/y offset determines where
+	 * on the target image to place the copied data; the width/height values determine how much to copy
+	 * from the screen.
+	 * 
+	 * Note that invalid values, such as a height that is larger than the image's texture, may lead to
+	 * unexpected results.
+	 * 
+	 * @param target the target image to copy the screen into
+	 * @param x the x position of the screen to start copying
+	 * @param y the y position of the screen to start copying
+	 * @param xoff the x destination on the target at which to place the copied data
+	 * @param yoff the y destination on the target at which to place the copied data
+	 * @param width the width of the data to copy from the screen
+	 * @param height the height of the data to copy from the screen
+	 * @author davedes
+	 */
 	public void copyArea(Image target, int x, int y, int xoff, int yoff, int width, int height) {
 		predraw();
 		Texture tex = target.getTexture();
