@@ -563,9 +563,9 @@ public class AngelCodeFont implements Font {
 
 			if (lastCharDef != null) 
 				width += lastCharDef.getKerning(id);
-			else //first glyph
-				width -= charDef.xoffset;
-			
+//			else //first glyph
+//				width -= charDef.xoffset;
+//			
 			lastCharDef = charDef;
 			
 			//space characters have zero width, so use their xadvance instead
