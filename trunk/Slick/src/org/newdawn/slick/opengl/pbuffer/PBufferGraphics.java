@@ -154,6 +154,11 @@ public class PBufferGraphics extends Graphics {
 		GL11.glMatrixMode(GL11.GL_MODELVIEW);
 	}
 	
+	/** glOrtho is called with (0, screenWidth, 0, screenHeight, 1, -1) meaning the Y value is flipped */
+	protected boolean isYFlipped() {
+		return true;
+	}
+	
 	/**
 	 * @see org.newdawn.slick.Graphics#destroy()
 	 */
