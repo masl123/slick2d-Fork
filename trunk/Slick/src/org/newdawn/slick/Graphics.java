@@ -7,9 +7,11 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.GL11;
 import org.newdawn.slick.geom.Rectangle;
 import org.newdawn.slick.geom.Shape;
 import org.newdawn.slick.geom.ShapeRenderer;
+import org.newdawn.slick.opengl.Texture;
 import org.newdawn.slick.opengl.TextureImpl;
 import org.newdawn.slick.opengl.renderer.LineStripRenderer;
 import org.newdawn.slick.opengl.renderer.Renderer;
@@ -1464,12 +1466,20 @@ public class Graphics {
 	 *            The y position to copy from
 	 */
 	public void copyArea(Image target, int x, int y) {
+		copyArea(target, x, y, 0, 0, target.getWidth(), target.getHeight());
+	}
+	
+	public void copyArea(Image target, int x, int y, int xoff, int yoff, int width, int height) {
 		predraw();
-		int format = target.getTexture().hasAlpha() ? SGL.GL_RGBA : SGL.GL_RGB;
+		Texture tex = target.getTexture();
 		target.bind();
-		GL.glCopyTexImage2D(SGL.GL_TEXTURE_2D, 0, format, x, screenHeight - (y + target.getHeight()), target.getTexture().getTextureWidth(),
-				target.getTexture().getTextureHeight(), 0);
-		target.ensureInverted();
+		if (isYFlipped()) {
+			GL11.glCopyTexSubImage2D(SGL.GL_TEXTURE_2D, 0, xoff, yoff, x, y, width, height);			
+		} else {
+			int yoff2 = target.getHeight()-height-yoff;
+			GL11.glCopyTexSubImage2D(SGL.GL_TEXTURE_2D, 0, xoff, yoff2, x, screenHeight - (y+height), width, height);
+			target.ensureInverted();
+		}
 		postdraw();
 	}
 	
@@ -1719,5 +1729,9 @@ public class Graphics {
 	 */
 	public void destroy() {
 		
+	}
+	
+	protected boolean isYFlipped() {
+		return false;
 	}
 }

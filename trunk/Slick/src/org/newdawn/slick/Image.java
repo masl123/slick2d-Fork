@@ -1376,9 +1376,12 @@ public class Image implements Renderable {
 	 * Make sure the texture cordinates are inverse on the y axis
 	 */
 	public void ensureInverted() {
+		init();
 		if (textureHeight > 0) {
 			textureOffsetY = textureOffsetY + textureHeight;
 			textureHeight = -textureHeight;
+//			textureOffsetY = - height / (float)texture.getTextureHeight();
+//			System.out.println("blah "+textureOffsetY+" "+height+" "+textureHeight+" "+texture.getTextureHeight());
 		}
 	}
 	
