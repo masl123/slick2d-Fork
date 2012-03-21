@@ -2,11 +2,9 @@ package org.newdawn.slick.tiled;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.util.zip.GZIPInputStream;
-import java.util.zip.InflaterInputStream;
 
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.util.Log;
@@ -82,7 +80,7 @@ public class Layer {
 		if(element.getAttribute("visible").equals("0")){
 			visible = false;
 		}
-
+		
 		// now read the layer properties
 		Element propsElement = (Element) element.getElementsByTagName("properties").item(0);
 		if (propsElement != null) {
@@ -109,55 +107,36 @@ public class Layer {
 				char[] enc = cdata.getNodeValue().trim().toCharArray();
 				byte[] dec = decodeBase64(enc);
 				GZIPInputStream is = new GZIPInputStream(new ByteArrayInputStream(dec));
-				readData(is);
+
+				for (int y = 0; y < height; y++) {
+					for (int x = 0; x < width; x++) {
+						int tileId = 0;
+						tileId |= is.read();
+						tileId |= is.read() <<  8;
+						tileId |= is.read() << 16;
+						tileId |= is.read() << 24;
+
+						if (tileId == 0) {
+							data[x][y][0] = -1;
+							data[x][y][1] = 0;
+							data[x][y][2] = 0;
+						} else {
+							TileSet set = map.findTileSet(tileId);
+
+							if (set != null) {
+								data[x][y][0] = set.index;
+								data[x][y][1] = tileId - set.firstGID;
+							}
+							data[x][y][2] = tileId;
+						}
+					}
+				}
 			} catch (IOException e) {
 				Log.error(e);
 				throw new SlickException("Unable to decode base 64 block");
 			}
-		} else if(encoding.equals("base64") && compression.equals("zlib")) {
-			Node cdata = dataNode.getFirstChild();
-			char[] enc = cdata.getNodeValue().trim().toCharArray();
-			byte[] dec = decodeBase64(enc);
-			InflaterInputStream is = new InflaterInputStream(new ByteArrayInputStream(dec));
-			readData(is);
-		}
-		else {
-			throw new SlickException("Unsupport tiled map type: "+encoding+","+compression+" (only gzip/zlib base64 supported)");
-		}
-	}
-
-	/**
-	 * For reading decompressed, decoded Layer data into this layer
-	 * 
-	 * @param is
-	 */
-	protected void readData(InputStream is) {
-		for (int y = 0; y < height; y++) {
-			for (int x = 0; x < width; x++) {
-				int tileId = 0;
-				try {
-					tileId |= is.read();
-					tileId |= is.read() <<  8;
-					tileId |= is.read() << 16;
-					tileId |= is.read() << 24;
-				}
-				catch (Exception e){
-					e.printStackTrace();
-				}
-				if (tileId == 0) {
-					data[x][y][0] = -1;
-					data[x][y][1] = 0;
-					data[x][y][2] = 0;
-				} else {
-					TileSet set = map.findTileSet(tileId);
-
-					if (set != null) {
-						data[x][y][0] = set.index;
-						data[x][y][1] = tileId - set.firstGID;
-					}
-					data[x][y][2] = tileId;
-				}
-			}
+		} else {
+			throw new SlickException("Unsupport tiled map type: "+encoding+","+compression+" (only gzip base64 supported)");
 		}
 	}
 
@@ -213,7 +192,7 @@ public class Layer {
 	 * @param mapTileWidth the tile width specified in the map file
 	 * @param mapTileHeight the tile height specified in the map file
 	 */
-	public void render(int x, int y, int sx, int sy, int width, int ty, boolean lineByLine, int mapTileWidth, int mapTileHeight) {
+	public void render(int x,int y,int sx,int sy,int width, int ty,boolean lineByLine, int mapTileWidth, int mapTileHeight) {
 		for (int tileset=0;tileset<map.getTileSetCount();tileset++) {
 			TileSet set = null;
 
@@ -236,6 +215,7 @@ public class Layer {
 
 					int tileOffsetY = set.tileHeight - mapTileHeight;
 
+					//						set.tiles.renderInUse(x+(tx*set.tileWidth), y+(ty*set.tileHeight), sheetX, sheetY);
 					set.tiles.renderInUse(x+(tx*mapTileWidth), y+(ty*mapTileHeight)-tileOffsetY, sheetX, sheetY);
 				}
 			}
