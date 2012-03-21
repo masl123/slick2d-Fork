@@ -141,6 +141,7 @@ public class Animation implements Renderable {
 	 * @param autoUpdate True if this animation should automatically update based on the render times
 	 */
 	public Animation(SpriteSheet frames, int x1, int y1, int x2, int y2, boolean horizontalScan, int duration, boolean autoUpdate) {
+		this.spriteSheet = frames;
 		this.autoUpdate = autoUpdate;
 		
 		if (!horizontalScan) {
