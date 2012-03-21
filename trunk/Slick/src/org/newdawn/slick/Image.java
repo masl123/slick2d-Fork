@@ -20,7 +20,7 @@ import org.newdawn.slick.util.Log;
  * @author kevin
  */
 public class Image implements Renderable {
-	
+
 	/**
 	 * Creates an image intended for use with offscreen rendering. Only one
 	 * texture is created (the FBO/PBuffer-bound texture which will be used
@@ -76,17 +76,17 @@ public class Image implements Renderable {
 	public static final int BOTTOM_RIGHT = 2;
 	/** The bottom left corner identifier */
 	public static final int BOTTOM_LEFT = 3;
-	
+
 	/** The renderer to use for all GL operations */
 	protected static SGL GL = Renderer.get();
-	
+
 	/** The sprite sheet currently in use */
 	protected static Texture inUse;
 	/** Use Linear Filtering (same as SGL.GL_LINEAR) */
 	public static final int FILTER_LINEAR = SGL.GL_LINEAR;
 	/** Use Nearest Filtering (same as SGL.GL_NEAREST) */
 	public static final int FILTER_NEAREST = SGL.GL_NEAREST;
-	
+
 	/** The OpenGL texture for this image */
 	protected Texture texture;
 	/** The width of the image */
@@ -101,7 +101,7 @@ public class Image implements Renderable {
 	protected float textureOffsetX;
 	/** The y texture offset to use to find our image */
 	protected float textureOffsetY;
-    /** Angle to rotate the image to. */
+	/** Angle to rotate the image to. */
 	protected float angle;
 	/** The alpha to draw the image at */
 	protected float alpha = 1.0f;
@@ -115,23 +115,23 @@ public class Image implements Renderable {
 	protected boolean destroyed;
 
 	/** The x coordinate of the centre of rotation */
-    protected float centerX; 
-    /** The y coordinate of the centre of rotation */
-    protected float centerY; 
-    
-    /** A meaningful name provided by the user of the image to tag it */
-    protected String name;
-    
-    /** The colours for each of the corners */
-    protected Color[] corners;
-    /** The OpenGL max filter */
-    private int filter = FILTER_LINEAR;
-    
-    /** True if the image should be flipped vertically */
-    private boolean flipped;
-    /** The transparent colour set if any */
-    private Color transparent;
-    
+	protected float centerX; 
+	/** The y coordinate of the centre of rotation */
+	protected float centerY; 
+
+	/** A meaningful name provided by the user of the image to tag it */
+	protected String name;
+
+	/** The colours for each of the corners */
+	protected Color[] corners;
+	/** The OpenGL max filter */
+	private int filter = FILTER_LINEAR;
+
+	/** True if the image should be flipped vertically */
+	private boolean flipped;
+	/** The transparent colour set if any */
+	private Color transparent;
+
 	/**
 	 * Create a texture as a copy of another
 	 * 
@@ -146,19 +146,19 @@ public class Image implements Renderable {
 		this.ref = other.ref;
 		this.textureOffsetX = other.textureOffsetX;
 		this.textureOffsetY = other.textureOffsetY;
-	
+
 		centerX = width / 2f;
 		centerY = height / 2f;
 		inited = true;
 	}
-	
+
 	/**
 	 * Cloning constructor - only used internally.
 	 */
 	protected Image() {
 	}
-	
-    /**
+
+	/**
 	 * Creates an image using the specified texture
 	 * 
 	 * @param texture
@@ -169,7 +169,7 @@ public class Image implements Renderable {
 		ref = texture.toString();
 		clampTexture();
 	}
-	    
+
 	/**
 	 * Create an image based on a file at the specified location
 	 * 
@@ -192,7 +192,7 @@ public class Image implements Renderable {
 	public Image(String ref, Color trans) throws SlickException  {
 		this(ref, false, FILTER_LINEAR, trans);
 	}
-	
+
 	/**
 	 * Create an image based on a file at the specified location
 	 * 
@@ -215,7 +215,7 @@ public class Image implements Renderable {
 	public Image(String ref, boolean flipped, int filter) throws SlickException {
 		this(ref, flipped, filter, null);
 	}
-	
+
 	/**
 	 * Create an image based on a file at the specified location
 	 * 
@@ -229,7 +229,7 @@ public class Image implements Renderable {
 		this.filter = f;
 		this.transparent = transparent;
 		this.flipped = flipped;
-		
+
 		try {
 			this.ref = ref;
 			int[] trans = null;
@@ -245,7 +245,7 @@ public class Image implements Renderable {
 			throw new SlickException("Failed to load image from: "+ref, e);
 		}
 	}
-	
+
 	/**
 	 * Set the image filtering to be used. Note that this will also affect any
 	 * image that was derived from this one (i.e. sub-images etc)
@@ -257,9 +257,9 @@ public class Image implements Renderable {
 
 		texture.bind();
 		GL.glTexParameteri(SGL.GL_TEXTURE_2D, SGL.GL_TEXTURE_MIN_FILTER, filter); 
-        GL.glTexParameteri(SGL.GL_TEXTURE_2D, SGL.GL_TEXTURE_MAG_FILTER, filter); 
+		GL.glTexParameteri(SGL.GL_TEXTURE_2D, SGL.GL_TEXTURE_MAG_FILTER, filter); 
 	}
-	
+
 	/**
 	 * Create an empty image
 	 * 
@@ -270,7 +270,7 @@ public class Image implements Renderable {
 	public Image(int width, int height) throws SlickException {
 		this(width, height, FILTER_NEAREST);
 	}
-	
+
 	/**
 	 * Create an empty image
 	 * 
@@ -282,7 +282,7 @@ public class Image implements Renderable {
 	public Image(int width, int height, int f) throws SlickException {
 		this(new EmptyImageData(width, height), f);
 	}
-	
+
 	/**
 	 * Create an image based on a file at the specified location
 	 * 
@@ -307,7 +307,7 @@ public class Image implements Renderable {
 	public Image(InputStream in, String ref, boolean flipped,int filter) throws SlickException {
 		load(in, ref, flipped, filter, null);
 	}
-	
+
 	/**
 	 * Create an image from a pixelData of pixels
 	 * 
@@ -315,9 +315,9 @@ public class Image implements Renderable {
 	 */
 	Image(ImageBuffer buffer) {
 		this(buffer, FILTER_LINEAR);
-        TextureImpl.bindNone();
+		TextureImpl.bindNone();
 	}
-	
+
 	/**
 	 * Create an image from a pixelData of pixels
 	 * 
@@ -326,7 +326,7 @@ public class Image implements Renderable {
 	 */
 	Image(ImageBuffer buffer, int filter) {
 		this((ImageData) buffer, filter);
-        TextureImpl.bindNone();
+		TextureImpl.bindNone();
 	}
 
 	/**
@@ -337,7 +337,7 @@ public class Image implements Renderable {
 	public Image(ImageData data) {
 		this(data, FILTER_LINEAR);
 	}
-	
+
 	/**
 	 * Create an image from a image data source. Note that this method uses 
 	 * 
@@ -362,7 +362,7 @@ public class Image implements Renderable {
 	public int getFilter() {
 		return filter;
 	}
-	
+
 	/** 
 	 * Get the reference to the resource this image was loaded from, if any. Note that
 	 * this can be null in the cases where an image was programatically generated.
@@ -372,7 +372,7 @@ public class Image implements Renderable {
 	public String getResourceReference() {
 		return ref;
 	}
-	
+
 	/**
 	 * Set the filter to apply when drawing this image
 	 * 
@@ -387,7 +387,7 @@ public class Image implements Renderable {
 		setColor(BOTTOM_LEFT, r, g, b, a);
 		setColor(BOTTOM_RIGHT, r, g, b, a);
 	}
-	
+
 	/**
 	 * Set the filter to apply when drawing this image
 	 * 
@@ -401,7 +401,7 @@ public class Image implements Renderable {
 		setColor(BOTTOM_LEFT, r, g, b);
 		setColor(BOTTOM_RIGHT, r, g, b);
 	}
-	
+
 	/** 
 	 * Set the color of the given corner when this image is rendered. This is 
 	 * useful lots of visual effect but especially light maps
@@ -416,7 +416,7 @@ public class Image implements Renderable {
 		if (corners == null) {
 			corners = new Color[] {new Color(1,1,1,1f),new Color(1,1,1,1f), new Color(1,1,1,1f), new Color(1,1,1,1f)};
 		}
-		
+
 		corners[corner].r = r;
 		corners[corner].g = g;
 		corners[corner].b = b;
@@ -436,25 +436,25 @@ public class Image implements Renderable {
 		if (corners == null) {
 			corners = new Color[] {new Color(1,1,1,1f),new Color(1,1,1,1f), new Color(1,1,1,1f), new Color(1,1,1,1f)};
 		}
-		
+
 		corners[corner].r = r;
 		corners[corner].g = g;
 		corners[corner].b = b;
 	}
-	
+
 	/**
 	 * Clamp the loaded texture to it's edges
 	 */
 	public void clampTexture() {
-        if (GL.canTextureMirrorClamp()) {
-        	GL.glTexParameteri(SGL.GL_TEXTURE_2D, SGL.GL_TEXTURE_WRAP_S, SGL.GL_MIRROR_CLAMP_TO_EDGE_EXT);
-        	GL.glTexParameteri(SGL.GL_TEXTURE_2D, SGL.GL_TEXTURE_WRAP_T, SGL.GL_MIRROR_CLAMP_TO_EDGE_EXT);
-        } else {
-        	GL.glTexParameteri(SGL.GL_TEXTURE_2D, SGL.GL_TEXTURE_WRAP_S, SGL.GL_CLAMP);
-        	GL.glTexParameteri(SGL.GL_TEXTURE_2D, SGL.GL_TEXTURE_WRAP_T, SGL.GL_CLAMP);
-        }
+		if (GL.canTextureMirrorClamp()) {
+			GL.glTexParameteri(SGL.GL_TEXTURE_2D, SGL.GL_TEXTURE_WRAP_S, SGL.GL_MIRROR_CLAMP_TO_EDGE_EXT);
+			GL.glTexParameteri(SGL.GL_TEXTURE_2D, SGL.GL_TEXTURE_WRAP_T, SGL.GL_MIRROR_CLAMP_TO_EDGE_EXT);
+		} else {
+			GL.glTexParameteri(SGL.GL_TEXTURE_2D, SGL.GL_TEXTURE_WRAP_S, SGL.GL_CLAMP);
+			GL.glTexParameteri(SGL.GL_TEXTURE_2D, SGL.GL_TEXTURE_WRAP_T, SGL.GL_CLAMP);
+		}
 	}
-	
+
 	/**
 	 * Give this image a meaningful tagging name. Can be used as user data/identifier
 	 * for the image.
@@ -464,7 +464,7 @@ public class Image implements Renderable {
 	public void setName(String name) {
 		this.name = name;
 	}
-	
+
 	/**
 	 * Return a meaningful tagging name that has been assigned to this image. 
 	 * 
@@ -473,7 +473,7 @@ public class Image implements Renderable {
 	public String getName() {
 		return name;
 	}
-	
+
 	/**
 	 * Get a graphics context that can be used to draw to this image
 	 * 
@@ -483,7 +483,7 @@ public class Image implements Renderable {
 	public Graphics getGraphics() throws SlickException {
 		return GraphicsFactory.getGraphicsForImage(this);
 	}
-	
+
 	/**
 	 * Load the image
 	 * 
@@ -496,7 +496,7 @@ public class Image implements Renderable {
 	 */
 	private void load(InputStream in, String ref, boolean flipped, int f, Color transparent) throws SlickException {
 		this.filter = f;
-		
+
 		try {
 			this.ref = ref;
 			int[] trans = null;
@@ -527,7 +527,7 @@ public class Image implements Renderable {
 		inited = false;
 		init();
 	}
-	
+
 	/**
 	 * Initialise internal data
 	 */
@@ -535,7 +535,7 @@ public class Image implements Renderable {
 		if (inited) {
 			return;
 		}
-		
+
 		inited = true;
 		if (texture != null) {
 			width = texture.getImageWidth();
@@ -545,9 +545,9 @@ public class Image implements Renderable {
 			textureWidth = texture.getWidth();
 			textureHeight = texture.getHeight();
 		}
-		
+
 		initImpl();
-	
+
 		centerX = width / 2f;
 		centerY = height / 2f;
 	}
@@ -556,16 +556,16 @@ public class Image implements Renderable {
 	 * Hook for subclasses to perform initialisation
 	 */
 	protected void initImpl() {
-		
+
 	}
-	
+
 	/**
 	 * Draw this image at the current location
 	 */
 	public void draw() {
 		draw(0,0);
 	}
-	
+
 	/**
 	 * Draw the image based on it's center 
 	 * 
@@ -575,7 +575,7 @@ public class Image implements Renderable {
 	public void drawCentered(float x, float y) {
 		draw(x-(getWidth()/2f),y-(getHeight()/2f));
 	}
-	
+
 	/**
 	 * Draw this image at the specified location
 	 * 
@@ -586,7 +586,7 @@ public class Image implements Renderable {
 		init();
 		draw(x,y,width,height);
 	}
-	
+
 	/**
 	 * Draw this image at the specified location
 	 * 
@@ -598,7 +598,7 @@ public class Image implements Renderable {
 		init();
 		draw(x,y,width,height, filter);
 	}
-	
+
 	/**
 	 * Unlike the other drawEmbedded methods, this allows for the embedded image
 	 * to be rotated. This is done by applying a rotation transform to each 
@@ -619,7 +619,7 @@ public class Image implements Renderable {
 		init();
 		float scaleX = width/this.width;
 		float scaleY = height/this.height;
-		
+
 		float cx = getCenterOfRotationX()*scaleX;
 		float cy = getCenterOfRotationY()*scaleY;
 
@@ -650,7 +650,7 @@ public class Image implements Renderable {
 		float x4 = (cos * p2x - sin * p2y) + cx; // TOP RIGHT
 		float y4 = (sin * p2x + cos * p2y) + cy;
 		if (corners == null) {
-		    GL.glTexCoord2f(tx, ty);
+			GL.glTexCoord2f(tx, ty);
 			GL.glVertex3f(x+x1, y+y1, 0);
 			GL.glTexCoord2f(tx, ty + tw);
 			GL.glVertex3f(x+x2, y+y2, 0);
@@ -660,7 +660,7 @@ public class Image implements Renderable {
 			GL.glVertex3f(x+x4, y+y4, 0);
 		} else {
 			corners[TOP_LEFT].bind();
-		    GL.glTexCoord2f(tx, ty);
+			GL.glTexCoord2f(tx, ty);
 			GL.glVertex3f(x+x1, y+y1, 0);
 			corners[BOTTOM_LEFT].bind();
 			GL.glTexCoord2f(tx, ty + th);
@@ -674,7 +674,7 @@ public class Image implements Renderable {
 		}
 	}
 
-	
+
 	/**
 	 * Draw this image as part of a collection of images (rotation is ignored).
 	 * 
@@ -685,9 +685,9 @@ public class Image implements Renderable {
 	 */
 	public void drawEmbedded(float x,float y,float width,float height) {
 		init();
-		
+
 		if (corners == null) {
-		    GL.glTexCoord2f(textureOffsetX, textureOffsetY);
+			GL.glTexCoord2f(textureOffsetX, textureOffsetY);
 			GL.glVertex3f(x, y, 0);
 			GL.glTexCoord2f(textureOffsetX, textureOffsetY + textureHeight);
 			GL.glVertex3f(x, y + height, 0);
@@ -698,7 +698,7 @@ public class Image implements Renderable {
 			GL.glVertex3f(x + width, y, 0);
 		} else {
 			corners[TOP_LEFT].bind();
-		    GL.glTexCoord2f(textureOffsetX, textureOffsetY);
+			GL.glTexCoord2f(textureOffsetX, textureOffsetY);
 			GL.glVertex3f(x, y, 0);
 			corners[BOTTOM_LEFT].bind();
 			GL.glTexCoord2f(textureOffsetX, textureOffsetY + textureHeight);
@@ -749,12 +749,12 @@ public class Image implements Renderable {
 		if (filter != null) {
 			filter.bind();
 		}
-		
+
 		float mywidth = x2 - x;
 		float myheight = y2 - y;
 		float texwidth = srcx2 - srcx;
 		float texheight = srcy2 - srcy;
-	
+
 		float newTextureOffsetX = (((srcx) / (width)) * textureWidth)
 				+ textureOffsetX;
 		float newTextureOffsetY = (((srcy) / (height)) * textureHeight)
@@ -763,7 +763,7 @@ public class Image implements Renderable {
 				* textureWidth;
 		float newTextureHeight = ((texheight) / (height))
 				* textureHeight;
-	
+
 		GL.glTexCoord2f(newTextureOffsetX, newTextureOffsetY);
 		GL.glVertex3f(x,y, 0.0f);
 		GL.glTexCoord2f(newTextureOffsetX, newTextureOffsetY
@@ -784,7 +784,7 @@ public class Image implements Renderable {
 	 */
 	public float getTextureOffsetX() {
 		init();
-		
+
 		return textureOffsetX;
 	}
 
@@ -795,7 +795,7 @@ public class Image implements Renderable {
 	 */
 	public float getTextureOffsetY() {
 		init();
-		
+
 		return textureOffsetY;
 	}
 
@@ -806,7 +806,7 @@ public class Image implements Renderable {
 	 */
 	public float getTextureWidth() {
 		init();
-		
+
 		return textureWidth;
 	}
 
@@ -817,10 +817,10 @@ public class Image implements Renderable {
 	 */
 	public float getTextureHeight() {
 		init();
-		
+
 		return textureHeight;
 	}
-	
+
 	/**
 	 * Draw the image with a given scale
 	 * 
@@ -832,7 +832,7 @@ public class Image implements Renderable {
 		init();
 		draw(x,y,width*scale,height*scale,Color.white);
 	}
-	
+
 	/**
 	 * Draw the image with a given scale
 	 * 
@@ -845,7 +845,7 @@ public class Image implements Renderable {
 		init();
 		draw(x,y,width*scale,height*scale,filter);
 	}
-	
+
 	/**
 	 * Draw this image at a specified location and size
 	 * 
@@ -871,9 +871,9 @@ public class Image implements Renderable {
 	 * @param hshear The amount to shear the bottom points by horizontally
 	 * @param vshear The amount to shear the right points by vertically
 	 */
-    public void drawSheared(float x,float y, float hshear, float vshear) { 
-    	this.drawSheared(x, y, hshear, vshear, Color.white);
-    }
+	public void drawSheared(float x,float y, float hshear, float vshear) { 
+		this.drawSheared(x, y, hshear, vshear, Color.white);
+	}
 	/**
 	 * Draw this image at a specified location and size. The center of rotation
 	 * is <i>not</i> scaled according to the shear.
@@ -884,49 +884,49 @@ public class Image implements Renderable {
 	 * @param vshear The amount to shear the right points by vertically
 	 * @param filter The colour filter to apply
 	 */
-    public void drawSheared(float x,float y, float hshear, float vshear, Color filter) { 
-    	init();
-    	if (alpha != 1) {
-    		if (filter == null) {
-    			filter = Color.white;
-    		}
-    		
-    		filter = new Color(filter);
-    		filter.a *= alpha;
-    	}
-        if (filter != null) { 
-            filter.bind(); 
-        } 
-        
-        texture.bind(); 
-        
-        GL.glTranslatef(x, y, 0);
-        if (angle != 0) {
-	        GL.glTranslatef(centerX, centerY, 0.0f); 
-	        GL.glRotatef(angle, 0.0f, 0.0f, 1.0f); 
-	        GL.glTranslatef(-centerX, -centerY, 0.0f); 
-        }
-        
-        GL.glBegin(SGL.GL_QUADS); 
-		    GL.glTexCoord2f(textureOffsetX, textureOffsetY);
-			GL.glVertex3f(0, 0, 0);
-			GL.glTexCoord2f(textureOffsetX, textureOffsetY + textureHeight);
-			GL.glVertex3f(hshear, height, 0);
-			GL.glTexCoord2f(textureOffsetX + textureWidth, textureOffsetY
-					+ textureHeight);
-			GL.glVertex3f(width + hshear, height + vshear, 0);
-			GL.glTexCoord2f(textureOffsetX + textureWidth, textureOffsetY);
-			GL.glVertex3f(width, vshear, 0);
-        GL.glEnd(); 
-        
-        if (angle != 0) {
-	        GL.glTranslatef(centerX, centerY, 0.0f); 
-	        GL.glRotatef(-angle, 0.0f, 0.0f, 1.0f); 
-	        GL.glTranslatef(-centerX, -centerY, 0.0f); 
-        }
-        GL.glTranslatef(-x, -y, 0);
-    } 
-    
+	public void drawSheared(float x,float y, float hshear, float vshear, Color filter) { 
+		init();
+		if (alpha != 1) {
+			if (filter == null) {
+				filter = Color.white;
+			}
+
+			filter = new Color(filter);
+			filter.a *= alpha;
+		}
+		if (filter != null) { 
+			filter.bind(); 
+		} 
+
+		texture.bind(); 
+
+		GL.glTranslatef(x, y, 0);
+		if (angle != 0) {
+			GL.glTranslatef(centerX, centerY, 0.0f); 
+			GL.glRotatef(angle, 0.0f, 0.0f, 1.0f); 
+			GL.glTranslatef(-centerX, -centerY, 0.0f); 
+		}
+
+		GL.glBegin(SGL.GL_QUADS); 
+		GL.glTexCoord2f(textureOffsetX, textureOffsetY);
+		GL.glVertex3f(0, 0, 0);
+		GL.glTexCoord2f(textureOffsetX, textureOffsetY + textureHeight);
+		GL.glVertex3f(hshear, height, 0);
+		GL.glTexCoord2f(textureOffsetX + textureWidth, textureOffsetY
+				+ textureHeight);
+		GL.glVertex3f(width + hshear, height + vshear, 0);
+		GL.glTexCoord2f(textureOffsetX + textureWidth, textureOffsetY);
+		GL.glVertex3f(width, vshear, 0);
+		GL.glEnd(); 
+
+		if (angle != 0) {
+			GL.glTranslatef(centerX, centerY, 0.0f); 
+			GL.glRotatef(-angle, 0.0f, 0.0f, 1.0f); 
+			GL.glTranslatef(-centerX, -centerY, 0.0f); 
+		}
+		GL.glTranslatef(-x, -y, 0);
+	} 
+
 	/**
 	 * Draw this image at a specified location and size
 	 * 
@@ -936,43 +936,43 @@ public class Image implements Renderable {
 	 * @param height The height to render the image at
 	 * @param filter The color to filter with while drawing
 	 */
-    public void draw(float x,float y,float width,float height,Color filter) { 
-    	init();
-    	if (alpha != 1) {
-    		if (filter == null) {
-    			filter = Color.white;
-    		}
-    		
-    		filter = new Color(filter);
-    		filter.a *= alpha;
-    	}
-        if (filter != null) { 
-            filter.bind(); 
-        } 
-        
-        float centerX = this.centerX * (width / (float)getWidth());
-        float centerY = this.centerY * (height / (float)getHeight());
-       
-        texture.bind();
-        
-        GL.glTranslatef(x, y, 0);
-        if (angle != 0) {
-	        GL.glTranslatef(centerX, centerY, 0.0f); 
-	        GL.glRotatef(angle, 0.0f, 0.0f, 1.0f); 
-	        GL.glTranslatef(-centerX, -centerY, 0.0f); 
-        }
-        
-        GL.glBegin(SGL.GL_QUADS); 
-            drawEmbedded(0,0,width,height); 
-        GL.glEnd(); 
-        
-        if (angle != 0) {
-	        GL.glTranslatef(centerX, centerY, 0.0f); 
-	        GL.glRotatef(-angle, 0.0f, 0.0f, 1.0f); 
-	        GL.glTranslatef(-centerX, -centerY, 0.0f); 
-        }
-        GL.glTranslatef(-x, -y, 0);
-    } 
+	public void draw(float x,float y,float width,float height,Color filter) { 
+		init();
+		if (alpha != 1) {
+			if (filter == null) {
+				filter = Color.white;
+			}
+
+			filter = new Color(filter);
+			filter.a *= alpha;
+		}
+		if (filter != null) { 
+			filter.bind(); 
+		} 
+
+		float centerX = this.centerX * (width / (float)getWidth());
+		float centerY = this.centerY * (height / (float)getHeight());
+
+		texture.bind();
+
+		GL.glTranslatef(x, y, 0);
+		if (angle != 0) {
+			GL.glTranslatef(centerX, centerY, 0.0f); 
+			GL.glRotatef(angle, 0.0f, 0.0f, 1.0f); 
+			GL.glTranslatef(-centerX, -centerY, 0.0f); 
+		}
+
+		GL.glBegin(SGL.GL_QUADS); 
+		drawEmbedded(0,0,width,height); 
+		GL.glEnd(); 
+
+		if (angle != 0) {
+			GL.glTranslatef(centerX, centerY, 0.0f); 
+			GL.glRotatef(-angle, 0.0f, 0.0f, 1.0f); 
+			GL.glTranslatef(-centerX, -centerY, 0.0f); 
+		}
+		GL.glTranslatef(-x, -y, 0);
+	} 
 
 	/**
 	 * Draw this image at a specified location and size as a silohette
@@ -985,7 +985,7 @@ public class Image implements Renderable {
 	public void drawFlash(float x,float y,float width,float height) {
 		drawFlash(x,y,width,height,Color.white);
 	}
-	
+
 	/**
 	 * Set the centre of the rotation when applied to this image.
 	 * 
@@ -1005,10 +1005,10 @@ public class Image implements Renderable {
 	 */
 	public float getCenterOfRotationX() {
 		init();
-		
+
 		return centerX;
 	}
-	
+
 	/**
 	 * Get the y component of the center of rotation of this image.
 	 * 
@@ -1016,10 +1016,10 @@ public class Image implements Renderable {
 	 */
 	public float getCenterOfRotationY() {
 		init();
-		
+
 		return centerY;
 	}
-	
+
 	/**
 	 * Draw this image at a specified location and size as a silohette
 	 * 
@@ -1031,40 +1031,40 @@ public class Image implements Renderable {
 	 */
 	public void drawFlash(float x,float y,float width,float height, Color col) {
 		init();
-		
+
 		col.bind();
 		texture.bind();
-		
-        float centerX = this.centerX * (width / (float)getWidth());
-        float centerY = this.centerY * (height / (float)getHeight());
-       
+
+		float centerX = this.centerX * (width / (float)getWidth());
+		float centerY = this.centerY * (height / (float)getHeight());
+
 		if (GL.canSecondaryColor()) {
 			GL.glEnable(SGL.GL_COLOR_SUM_EXT);
 			GL.glSecondaryColor3ubEXT((byte)(col.r * 255), 
-													 (byte)(col.g * 255), 
-													 (byte)(col.b * 255));
+					(byte)(col.g * 255), 
+					(byte)(col.b * 255));
 		}
-		
+
 		GL.glTexEnvi(SGL.GL_TEXTURE_ENV, SGL.GL_TEXTURE_ENV_MODE, SGL.GL_MODULATE);
 
-        GL.glTranslatef(x, y, 0);
-        if (angle != 0) {
-	        GL.glTranslatef(centerX, centerY, 0.0f); 
-	        GL.glRotatef(angle, 0.0f, 0.0f, 1.0f); 
-	        GL.glTranslatef(-centerX, -centerY, 0.0f); 
-        }
-        
+		GL.glTranslatef(x, y, 0);
+		if (angle != 0) {
+			GL.glTranslatef(centerX, centerY, 0.0f); 
+			GL.glRotatef(angle, 0.0f, 0.0f, 1.0f); 
+			GL.glTranslatef(-centerX, -centerY, 0.0f); 
+		}
+
 		GL.glBegin(SGL.GL_QUADS);
-			drawEmbedded(0,0,width,height);
+		drawEmbedded(0,0,width,height);
 		GL.glEnd();
 
-        if (angle != 0) {
-	        GL.glTranslatef(centerX, centerY, 0.0f); 
-	        GL.glRotatef(-angle, 0.0f, 0.0f, 1.0f); 
-	        GL.glTranslatef(-centerX, -centerY, 0.0f); 
-        }
-        GL.glTranslatef(-x, -y, 0);
-        
+		if (angle != 0) {
+			GL.glTranslatef(centerX, centerY, 0.0f); 
+			GL.glRotatef(-angle, 0.0f, 0.0f, 1.0f); 
+			GL.glTranslatef(-centerX, -centerY, 0.0f); 
+		}
+		GL.glTranslatef(-x, -y, 0);
+
 		if (GL.canSecondaryColor()) {
 			GL.glDisable(SGL.GL_COLOR_SUM_EXT);
 		}
@@ -1079,55 +1079,55 @@ public class Image implements Renderable {
 	public void drawFlash(float x,float y) {
 		drawFlash(x,y,getWidth(),getHeight());
 	}
-	
-    /**
-     * Set the angle to rotate this image to.  The angle will be normalized to 
-     * be 0 <= angle < 360.  The image will be rotated around its center.
-     * 
-     * @param angle The angle to be set
-     */
-    public void setRotation(float angle) { 
-        this.angle = angle % 360.0f; 
-    } 
-    
-    /**
-     * Get the current angle of rotation for this image.
-     * The image will be rotated around its center.
-     * 
-     * @return The current angle.
-     */
-    public float getRotation() { 
-        return angle; 
-    } 
-    
-    /**
-     * Get the alpha value to use when rendering this image
-     * 
-     * @return The alpha value to use when rendering this image
-     */
-    public float getAlpha() {
-    	return alpha;
-    }
-    
-    /**
-     * Set the alpha value to use when rendering this image
-     * 
-     * @param alpha The alpha value to use when rendering this image
-     */
-    public void setAlpha(float alpha) {
-    	this.alpha = alpha;
-    }
-    
-    /**
-     * Add the angle provided to the current rotation.  The angle will be normalized to 
-     * be 0 <= angle < 360.  The image will be rotated around its center.
-     *  
-     * @param angle The angle to add.
-     */
-    public void rotate(float angle) { 
-        this.angle += angle;
-        this.angle = this.angle % 360;
-    } 
+
+	/**
+	 * Set the angle to rotate this image to.  The angle will be normalized to 
+	 * be 0 <= angle < 360.  The image will be rotated around its center.
+	 * 
+	 * @param angle The angle to be set
+	 */
+	public void setRotation(float angle) { 
+		this.angle = angle % 360.0f; 
+	} 
+
+	/**
+	 * Get the current angle of rotation for this image.
+	 * The image will be rotated around its center.
+	 * 
+	 * @return The current angle.
+	 */
+	public float getRotation() { 
+		return angle; 
+	} 
+
+	/**
+	 * Get the alpha value to use when rendering this image
+	 * 
+	 * @return The alpha value to use when rendering this image
+	 */
+	public float getAlpha() {
+		return alpha;
+	}
+
+	/**
+	 * Set the alpha value to use when rendering this image
+	 * 
+	 * @param alpha The alpha value to use when rendering this image
+	 */
+	public void setAlpha(float alpha) {
+		this.alpha = alpha;
+	}
+
+	/**
+	 * Add the angle provided to the current rotation.  The angle will be normalized to 
+	 * be 0 <= angle < 360.  The image will be rotated around its center.
+	 *  
+	 * @param angle The angle to add.
+	 */
+	public void rotate(float angle) { 
+		this.angle += angle;
+		this.angle = this.angle % 360;
+	} 
 
 	/**
 	 * Draw a section of this image at a particular location and scale on the screen
@@ -1142,7 +1142,7 @@ public class Image implements Renderable {
 	public void draw(float x, float y, float srcx, float srcy, float srcx2, float srcy2) {
 		draw(x,y,x+width,y+height,srcx,srcy,srcx2,srcy2);
 	}
-	
+
 	/**
 	 * Draw a section of this image at a particular location and scale on the screen
 	 * 
@@ -1158,7 +1158,7 @@ public class Image implements Renderable {
 	public void draw(float x, float y, float x2, float y2, float srcx, float srcy, float srcx2, float srcy2) {
 		draw(x,y,x2,y2,srcx,srcy,srcx2,srcy2,Color.white);
 	}
-	
+
 	/**
 	 * Draw a section of this image at a particular location and scale on the screen.
 	 * 
@@ -1177,43 +1177,43 @@ public class Image implements Renderable {
 	public void draw(float x, float y, float x2, float y2, float srcx, float srcy, float srcx2, float srcy2, Color filter) {
 		init();
 
-    	if (alpha != 1) {
-    		if (filter == null) {
-    			filter = Color.white;
-    		}
-    		
-    		filter = new Color(filter);
-    		filter.a *= alpha;
-    	}
+		if (alpha != 1) {
+			if (filter == null) {
+				filter = Color.white;
+			}
+
+			filter = new Color(filter);
+			filter.a *= alpha;
+		}
 		filter.bind();
 		texture.bind();
-		
-        float centerX = this.centerX * ((x2-x) / (float)getWidth());
-        float centerY = this.centerY * ((y2-y) / (float)getHeight());
-       
-        GL.glTranslatef(x, y, 0);
-        if (angle != 0) {
-	        GL.glTranslatef(centerX, centerY, 0.0f); 
-	        GL.glRotatef(angle, 0.0f, 0.0f, 1.0f); 
-	        GL.glTranslatef(-centerX, -centerY, 0.0f); 
-        }
-        
-        GL.glBegin(SGL.GL_QUADS); 
-			drawEmbedded(0,0,x2-x,y2-y,srcx,srcy,srcx2,srcy2);
-        GL.glEnd(); 
-        
-        if (angle != 0) {
-	        GL.glTranslatef(centerX, centerY, 0.0f); 
-	        GL.glRotatef(-angle, 0.0f, 0.0f, 1.0f); 
-	        GL.glTranslatef(-centerX, -centerY, 0.0f); 
-        }
-        GL.glTranslatef(-x, -y, 0);
-        
-//		GL.glBegin(SGL.GL_QUADS);
-//		drawEmbedded(x,y,x2,y2,srcx,srcy,srcx2,srcy2);
-//		GL.glEnd();
+
+		float centerX = this.centerX * ((x2-x) / (float)getWidth());
+		float centerY = this.centerY * ((y2-y) / (float)getHeight());
+
+		GL.glTranslatef(x, y, 0);
+		if (angle != 0) {
+			GL.glTranslatef(centerX, centerY, 0.0f); 
+			GL.glRotatef(angle, 0.0f, 0.0f, 1.0f); 
+			GL.glTranslatef(-centerX, -centerY, 0.0f); 
+		}
+
+		GL.glBegin(SGL.GL_QUADS); 
+		drawEmbedded(0,0,x2-x,y2-y,srcx,srcy,srcx2,srcy2);
+		GL.glEnd(); 
+
+		if (angle != 0) {
+			GL.glTranslatef(centerX, centerY, 0.0f); 
+			GL.glRotatef(-angle, 0.0f, 0.0f, 1.0f); 
+			GL.glTranslatef(-centerX, -centerY, 0.0f); 
+		}
+		GL.glTranslatef(-x, -y, 0);
+
+		//		GL.glBegin(SGL.GL_QUADS);
+		//		drawEmbedded(x,y,x2,y2,srcx,srcy,srcx2,srcy2);
+		//		GL.glEnd();
 	}
-	
+
 	/**
 	 * Draw the image in a warper rectangle. The effects this can 
 	 * have are many and varied, might be interesting though. 
@@ -1231,38 +1231,38 @@ public class Image implements Renderable {
 	 * @param y4 The bottom left corner y coordinate
 	 */
 	public void drawWarped(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4) {
-        Color.white.bind();
-        texture.bind();
+		Color.white.bind();
+		texture.bind();
 
-        GL.glTranslatef(x1, y1, 0);
-        if (angle != 0) {
-            GL.glTranslatef(centerX, centerY, 0.0f);
-            GL.glRotatef(angle, 0.0f, 0.0f, 1.0f);
-            GL.glTranslatef(-centerX, -centerY, 0.0f);
-        }
+		GL.glTranslatef(x1, y1, 0);
+		if (angle != 0) {
+			GL.glTranslatef(centerX, centerY, 0.0f);
+			GL.glRotatef(angle, 0.0f, 0.0f, 1.0f);
+			GL.glTranslatef(-centerX, -centerY, 0.0f);
+		}
 
-        GL.glBegin(SGL.GL_QUADS);
-        init();
+		GL.glBegin(SGL.GL_QUADS);
+		init();
 
-        GL.glTexCoord2f(textureOffsetX, textureOffsetY);
-        GL.glVertex3f(0, 0, 0);
-        GL.glTexCoord2f(textureOffsetX, textureOffsetY + textureHeight);
-        GL.glVertex3f(x2 - x1, y2 - y1, 0);
-        GL.glTexCoord2f(textureOffsetX + textureWidth, textureOffsetY
-                + textureHeight);
-        GL.glVertex3f(x3 - x1, y3 - y1, 0);
-        GL.glTexCoord2f(textureOffsetX + textureWidth, textureOffsetY);
-        GL.glVertex3f(x4 - x1, y4 - y1, 0);
-        GL.glEnd();
+		GL.glTexCoord2f(textureOffsetX, textureOffsetY);
+		GL.glVertex3f(0, 0, 0);
+		GL.glTexCoord2f(textureOffsetX, textureOffsetY + textureHeight);
+		GL.glVertex3f(x2 - x1, y2 - y1, 0);
+		GL.glTexCoord2f(textureOffsetX + textureWidth, textureOffsetY
+				+ textureHeight);
+		GL.glVertex3f(x3 - x1, y3 - y1, 0);
+		GL.glTexCoord2f(textureOffsetX + textureWidth, textureOffsetY);
+		GL.glVertex3f(x4 - x1, y4 - y1, 0);
+		GL.glEnd();
 
-        if (angle != 0) {
-            GL.glTranslatef(centerX, centerY, 0.0f);
-            GL.glRotatef(-angle, 0.0f, 0.0f, 1.0f);
-            GL.glTranslatef(-centerX, -centerY, 0.0f);
-        }
-        GL.glTranslatef(-x1, -y1, 0);
-    }
-	
+		if (angle != 0) {
+			GL.glTranslatef(centerX, centerY, 0.0f);
+			GL.glRotatef(-angle, 0.0f, 0.0f, 1.0f);
+			GL.glTranslatef(-centerX, -centerY, 0.0f);
+		}
+		GL.glTranslatef(-x1, -y1, 0);
+	}
+
 	/**
 	 * Get the width of this image
 	 * 
@@ -1282,7 +1282,7 @@ public class Image implements Renderable {
 		init();
 		return height;
 	}
-	
+
 	/**
 	 * Get a copy of this image. This is a shallow copy and does not 
 	 * duplicate image data -- corner colors, alpha and rotation are
@@ -1309,28 +1309,28 @@ public class Image implements Renderable {
 	 */
 	public Image getSubImage(int x,int y,int width,int height) {
 		init();
-		
+
 		float newTextureOffsetX = ((x / (float) this.width) * textureWidth) + textureOffsetX;
 		float newTextureOffsetY = ((y / (float) this.height) * textureHeight) + textureOffsetY;
 		float newTextureWidth = ((width / (float) this.width) * textureWidth);
 		float newTextureHeight = ((height / (float) this.height) * textureHeight);
-		
+
 		Image sub = new Image();
 		sub.inited = true;
 		sub.filter = this.filter;
 		sub.texture = this.texture;
 		sub.ref = ref;
-		
+
 		sub.textureOffsetX = newTextureOffsetX;
 		sub.textureOffsetY = newTextureOffsetY;
 		sub.textureWidth = newTextureWidth;
 		sub.textureHeight = newTextureHeight;
-		
+
 		sub.width = width;
 		sub.height = height;
 		sub.centerX = width / 2f;
 		sub.centerY = height / 2f;
-		
+
 		return sub;
 	}
 
@@ -1344,7 +1344,7 @@ public class Image implements Renderable {
 		init();
 		return getScaledCopy((int) (width*scale),(int) (height*scale));
 	}
-	
+
 	/**
 	 * Get a scaled copy of this image with its center of rotation 
 	 * scaled accordingly.
@@ -1360,7 +1360,7 @@ public class Image implements Renderable {
 		image.filter = this.filter;
 		image.texture = this.texture;
 		image.ref = ref;
-		
+
 		image.textureOffsetX = this.textureOffsetX;
 		image.textureOffsetY = this.textureOffsetY;
 		image.textureWidth = this.textureWidth;
@@ -1371,7 +1371,7 @@ public class Image implements Renderable {
 		image.centerY = this.centerY * (height / (float)this.height);
 		return image;
 	}
-	
+
 	/**
 	 * Make sure the texture cordinates are inverse on the y axis
 	 */
@@ -1381,7 +1381,7 @@ public class Image implements Renderable {
 			textureHeight = -textureHeight;
 		}
 	}
-	
+
 	/**
 	 * Get a copy image flipped on potentially two axis
 	 * 
@@ -1392,7 +1392,7 @@ public class Image implements Renderable {
 	public Image getFlippedCopy(boolean flipHorizontal, boolean flipVertical) {
 		init();
 		Image image = copy();
-		
+
 		if (flipHorizontal) {
 			image.textureOffsetX = textureOffsetX + textureWidth;
 			image.textureWidth = -textureWidth;
@@ -1401,7 +1401,7 @@ public class Image implements Renderable {
 			image.textureOffsetY = textureOffsetY + textureHeight;
 			image.textureHeight = -textureHeight;
 		}
-		
+
 		return image;
 	}
 
@@ -1417,7 +1417,7 @@ public class Image implements Renderable {
 		inUse = null;
 		GL.glEnd();
 	}
-	
+
 	/**
 	 * Start using this sheet. This method can be used for optimal rendering of a collection 
 	 * of sprites from a single sprite sheet. First, startUse(). Then render each sprite by
@@ -1435,16 +1435,16 @@ public class Image implements Renderable {
 		texture.bind();
 		GL.glBegin(SGL.GL_QUADS);
 	}
-	
+
 	/**
 	 * @see java.lang.Object#toString()
 	 */
 	public String toString() {
 		init();
-		
+
 		return "[Image "+ref+" "+width+"x"+height+"  "+textureOffsetX+","+textureOffsetY+","+textureWidth+","+textureHeight+"]";
 	}
-	
+
 	/**
 	 * Get the OpenGL texture holding this image
 	 * 
@@ -1453,7 +1453,7 @@ public class Image implements Renderable {
 	public Texture getTexture() {
 		return texture;
 	}
-	
+
 	/**
 	 * Set the texture used by this image; if the given
 	 * texture is different from the current texture,
@@ -1478,10 +1478,10 @@ public class Image implements Renderable {
 		if (b < 0) {
 			return 256 + b;
 		}
-		
+
 		return b;
 	}
-	
+
 	/**
 	 * Get the colour of a pixel at a specified location in this image
 	 * 
@@ -1493,34 +1493,34 @@ public class Image implements Renderable {
 		if (pixelData == null) {
 			pixelData = texture.getTextureData();
 		}
-		
+
 		int xo = (int) (textureOffsetX * texture.getTextureWidth());
 		int yo = (int) (textureOffsetY * texture.getTextureHeight());
-		
+
 		if (textureWidth < 0) {
 			x = xo - x;
 		} else {
 			x = xo + x;
 		} 
-		
+
 		if (textureHeight < 0) {
 			y = yo - y;
 		} else {
 			y = yo + y;
 		}
-		
+
 		int offset = x + (y * texture.getTextureWidth());
 		offset *= texture.hasAlpha() ? 4 : 3;
-		
+
 		if (texture.hasAlpha()) {
 			return new Color(translate(pixelData[offset]),translate(pixelData[offset+1]),
-							 translate(pixelData[offset+2]),translate(pixelData[offset+3]));
+					translate(pixelData[offset+2]),translate(pixelData[offset+3]));
 		} else {
 			return new Color(translate(pixelData[offset]),translate(pixelData[offset+1]),
-					 	     translate(pixelData[offset+2]));
+					translate(pixelData[offset+2]));
 		}
 	}
-	
+
 	/**
 	 * Check if this image has been destroyed
 	 * 
@@ -1529,7 +1529,7 @@ public class Image implements Renderable {
 	public boolean isDestroyed() {
 		return destroyed;
 	}
-	
+
 	/**
 	 * Destroy the image and release any native resources. 
 	 * Calls on a destroyed image have undefined results
@@ -1545,11 +1545,69 @@ public class Image implements Renderable {
 		texture.release();
 		GraphicsFactory.releaseGraphicsForImage(this);
 	}
-	
+
 	/**
 	 * Flush the current pixel data to force a re-read next update
 	 */
 	public void flushPixelData() {
 		pixelData = null;
+	}
+	
+	/**
+	 * Draws an image according to a transform (Rotate, FlipX, FlipY)
+	 * 	Rotate	- ?
+	 * 	FlipX	- ?
+	 * 	FlipY	- ?
+	 * 
+	 * @author liamzebedee
+	 * @param x
+	 * @param y
+	 * @param width
+	 * @param height
+	 * @param transform
+	 */
+	public void drawEmbedded(float x, float y, float width, float height, byte transform) {
+		boolean rotate = (transform & 1) > 0;
+		boolean flipY  = ((transform & 2) > 0) ^ rotate;                
+		boolean flipX  = ((transform & 4) > 0) ^ rotate;
+
+		if (flipX) {
+			x+=width;
+			width*=-1;;
+		}
+		if (flipY) {
+			y+=height;
+			height*=-1;
+		}
+		if (!rotate) 
+			drawEmbedded(x,y,width, height);
+		else {
+			init();
+			if (corners == null) {
+				GL.glTexCoord2f(textureOffsetX + textureWidth, 
+						textureOffsetY+ textureHeight);
+				GL.glVertex3f(x, y, 0);
+				GL.glTexCoord2f(textureOffsetX, textureOffsetY + textureHeight);
+				GL.glVertex3f(x, y + height, 0);
+				GL.glTexCoord2f(textureOffsetX , textureOffsetY);
+				GL.glVertex3f(x + width, y + height, 0);
+				GL.glTexCoord2f(textureOffsetX + textureWidth, textureOffsetY);
+				GL.glVertex3f(x + width, y, 0);
+			} else {
+				corners[TOP_LEFT].bind();
+				GL.glTexCoord2f(textureOffsetX + textureWidth, textureOffsetY 
+						+ textureHeight);
+				GL.glVertex3f(x, y, 0);
+				corners[BOTTOM_LEFT].bind();
+				GL.glTexCoord2f(textureOffsetX, textureOffsetY + textureHeight);
+				GL.glVertex3f(x, y + height, 0);
+				corners[BOTTOM_RIGHT].bind();
+				GL.glTexCoord2f(textureOffsetX , textureOffsetY);
+				GL.glVertex3f(x + width, y + height, 0);
+				corners[TOP_RIGHT].bind();
+				GL.glTexCoord2f(textureOffsetX + textureWidth, textureOffsetY);
+				GL.glVertex3f(x + width, y, 0);
+			}
+		}
 	}
 }
