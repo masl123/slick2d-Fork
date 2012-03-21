@@ -49,15 +49,8 @@ public class ObjectGroup {
 			tmap = (TiledMapPlus) map;
 		}
 		name = element.getAttribute("name");
-		String widthS = element.getAttribute("width");
-		if(widthS != null){
-			width = Integer.parseInt(widthS);
-		}
-		String heightS = element.getAttribute("height");
-		if(widthS != null){
-			height = Integer.parseInt(heightS);
-		}
-		
+		width = Integer.parseInt(element.getAttribute("width"));
+		height = Integer.parseInt(element.getAttribute("height"));
 		objects = new ArrayList<GroupObject>();
 		opacity = Float.parseFloat(element.getAttribute("opacity"));
 		if(element.getAttribute("visible").equals("0")){
