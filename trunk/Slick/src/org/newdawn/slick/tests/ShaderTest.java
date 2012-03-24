@@ -11,6 +11,10 @@ import org.newdawn.slick.SlickException;
 import org.newdawn.slick.opengl.shader.ShaderProgram;
 import org.newdawn.slick.util.Log;
 
+/**
+ * A simple shader test that inverts the color of an image.
+ * @author davedes
+ */
 public class ShaderTest extends BasicGame {
 	
 	public static void main(String[] args) throws SlickException {
@@ -40,6 +44,8 @@ public class ShaderTest extends BasicGame {
 		supported = ShaderProgram.isSupported();
 		
 		if (supported) {
+			//we turn off "strict mode" which means the 'tex0' uniform
+			//doesn't NEED to exist 
 			ShaderProgram.setStrictMode(false);
 			reload();
 		}
@@ -54,7 +60,7 @@ public class ShaderTest extends BasicGame {
 			program.release();
 		
 		try {
-			program = ShaderProgram.loadProgram("testdata/invert.vert", "testdata/invert.frag");
+			program = ShaderProgram.loadProgram("testdata/shaders/invert.vert", "testdata/shaders/invert.frag");
 			shaderWorks = true;
 			
 			//if we've got here it means our program was linked successfully
