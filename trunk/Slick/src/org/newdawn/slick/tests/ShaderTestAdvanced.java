@@ -32,7 +32,7 @@ public class ShaderTestAdvanced extends BasicGame {
 	private boolean shaderWorks, useVert=true, useHoriz=true;
 	private boolean supported = false;
 	
-	private float elapsed, rot, radius=1f;
+	private float rot, radius=1f;
 	
 	private GameContainer container;
 	private Image postImage, blurBuffer;
@@ -43,7 +43,6 @@ public class ShaderTestAdvanced extends BasicGame {
 	public void init(GameContainer container) throws SlickException {
 		this.container = container;
 		logo = new Image("testdata/logo.png");
-//		container.getGraphics().setBackground(Color.darkGray);
 		container.setClearEachFrame(false);
 		
 		supported = ShaderProgram.isSupported();
@@ -54,9 +53,6 @@ public class ShaderTestAdvanced extends BasicGame {
 				//this may fail in very very rare cases if the user has no FBO/PBuffer support
 				postImage = Image.createOffscreenImage(container.getWidth(), container.getHeight());
 				postGraphics = postImage.getGraphics();
-				
-				blurBuffer = Image.createOffscreenImage(container.getWidth(), container.getHeight());
-				blurGraphics = blurBuffer.getGraphics();
 				
 				String h = "testdata/shaders/hblur.frag";
 				String v = "testdata/shaders/vblur.frag";

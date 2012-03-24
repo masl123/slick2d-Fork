@@ -31,7 +31,6 @@ public class ShaderTest extends BasicGame {
 	private boolean shaderWorks, useShader=true;
 	private boolean supported = false;
 	
-	private float elapsed;
 	
 	private GameContainer container;
 	
