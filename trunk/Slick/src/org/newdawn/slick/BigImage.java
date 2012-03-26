@@ -33,20 +33,6 @@ public class BigImage extends Image {
 	/** The renderer to use for all GL operations */
 	protected static SGL GL = Renderer.get();
 	
-	/**
-	 * Get the maximum size of an image supported by the underlying
-	 * hardware.
-	 * 
-	 * @return The maximum size of the textures supported by the underlying
-	 * hardware.
-	 */
-	public static final int getMaxSingleImageSize() {
-		IntBuffer buffer = BufferUtils.createIntBuffer(16);
-		GL.glGetInteger(SGL.GL_MAX_TEXTURE_SIZE, buffer);
-		
-		return buffer.get(0);
-	}
-	
 	/** The last image that we put into "in use" mode */
 	private static Image lastBind;
 	

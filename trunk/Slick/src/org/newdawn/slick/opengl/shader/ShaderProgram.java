@@ -15,10 +15,12 @@ import org.lwjgl.opengl.ContextCapabilities;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL32;
+import org.lwjgl.opengl.GL41;
 import org.lwjgl.opengl.GLContext;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Vector2f;
+import org.newdawn.slick.opengl.renderer.Renderer;
 import org.newdawn.slick.util.Log;
 import org.newdawn.slick.util.ResourceLoader;
 
@@ -33,8 +35,6 @@ public class ShaderProgram {
 	public static final int VERTEX_SHADER = GL20.GL_VERTEX_SHADER;
 	/** The fragment shader type (GL20.GL_FRAGMENT_SHADER). */
 	public static final int FRAGMENT_SHADER = GL20.GL_FRAGMENT_SHADER;
-	/** The geometry shader type (GL32.GL_GEOMETRY_SHADER). */
-	public static final int GEOMETRY_SHADER = GL32.GL_GEOMETRY_SHADER;
 	
 	private static boolean strict = true;
 	
@@ -80,7 +80,7 @@ public class ShaderProgram {
 	 * Disables shaders.
 	 */
 	public static void unbind() {
-		ARBShaderObjects.glUseProgramObjectARB(0);
+		Renderer.get().glUseProgram(0);
 	}
 	
 	/** The OpenGL handle for this shader program object. */
@@ -215,8 +215,8 @@ public class ShaderProgram {
 	
 	private String shaderTypeString(int type) {
 		if (type==FRAGMENT_SHADER) return "FRAGMENT_SHADER";
-		if (type==GEOMETRY_SHADER) return "GEOMETRY_SHADER";
 		else if (type==VERTEX_SHADER) return "VERTEX_SHADER";
+		else if (type==GL32.GL_GEOMETRY_SHADER) return "GEOMETRY_SHADER";
 		else return "shader";
 	}
 	
@@ -300,7 +300,7 @@ public class ShaderProgram {
 	public void bind() {
 		if (!valid())
 			throw new IllegalStateException("trying to enable a program that is not valid");
-		ARBShaderObjects.glUseProgramObjectARB(program);
+		Renderer.get().glUseProgram(program);
 	}
 	
 	/**
@@ -543,6 +543,45 @@ public class ShaderProgram {
 	 */
 	public int getUniform1i(String name) {
 		return uniformi(name).get(0);
+	}
+
+	/**
+	 * A convenience method to retrieve an ivec2 uniform;
+	 * for maximum performance and memory efficiency you 
+	 * should use getUniform(String, IntBuffer) with a shared
+	 * buffer.
+	 * @param name the name of the uniform
+	 * @return a newly created int[] array with 2 elements; e.g. (x, y)
+	 */
+	public int[] getUniform2i(String name) {
+		IntBuffer buf = uniformi(name);
+		return new int[] { buf.get(0), buf.get(1) };
+	}
+
+	/**
+	 * A convenience method to retrieve an ivec3 uniform;
+	 * for maximum performance and memory efficiency you 
+	 * should use getUniform(String, IntBuffer) with a shared
+	 * buffer.
+	 * @param name the name of the uniform
+	 * @return a newly created int[] array with 3 elements; e.g. (x, y, z)
+	 */
+	public int[] getUniform3i(String name) {
+		IntBuffer buf = uniformi(name);
+		return new int[] { buf.get(0), buf.get(1), buf.get(2) };
+	}
+
+	/**
+	 * A convenience method to retrieve an ivec4 uniform;
+	 * for maximum performance and memory efficiency you 
+	 * should use getUniform(String, IntBuffer) with a shared
+	 * buffer.
+	 * @param name the name of the uniform
+	 * @return a newly created int[] array with 2 elements; e.g. (r, g, b, a)
+	 */
+	public int[] getUniform4i(String name) {
+		IntBuffer buf = uniformi(name);
+		return new int[] { buf.get(0), buf.get(1), buf.get(2), buf.get(3) };
 	}
 	
 	/**
