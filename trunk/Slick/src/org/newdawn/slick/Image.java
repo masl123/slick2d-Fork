@@ -2,7 +2,9 @@ package org.newdawn.slick;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.IntBuffer;
 
+import org.lwjgl.BufferUtils;
 import org.newdawn.slick.opengl.EmptyImageData;
 import org.newdawn.slick.opengl.ImageData;
 import org.newdawn.slick.opengl.InternalTextureLoader;
@@ -20,6 +22,20 @@ import org.newdawn.slick.util.Log;
  * @author kevin
  */
 public class Image implements Renderable {
+	
+
+	/**
+	 * Get the maximum size of an image supported by the underlying
+	 * hardware.
+	 * 
+	 * @return The maximum size of the textures supported by the underlying
+	 * hardware.
+	 */
+	public static final int getMaxSingleImageSize() {
+		IntBuffer buffer = BufferUtils.createIntBuffer(16);
+		GL.glGetInteger(SGL.GL_MAX_TEXTURE_SIZE, buffer);
+		return buffer.get(0);
+	}
 	
 	/**
 	 * Creates an image intended for use with offscreen rendering. Only one
