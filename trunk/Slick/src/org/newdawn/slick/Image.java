@@ -618,7 +618,7 @@ public class Image implements Renderable {
 	/**
 	 * Unlike the other drawEmbedded methods, this allows for the embedded image
 	 * to be rotated. This is done by applying a rotation transform to each 
-	 * vertex of the image. This ignroes getRotation but depends on the 
+	 * vertex of the image. This ignores getRotation but depends on the 
 	 * center x/y (scaled accordingly to the new width/height).
 	 * 
 	 * @param x the x to render the image at
@@ -690,9 +690,18 @@ public class Image implements Renderable {
 		}
 	}
 
+	/**
+	 * Draw this image as part of a collection of images (getRotation is ignored).
+	 * 
+	 * @param x The x location to draw the image at
+	 * @param y The y location to draw the image at
+	 */
+	public void drawEmbedded(float x,float y) {
+		drawEmbedded(x, y, getWidth(), getHeight());
+	}
 	
 	/**
-	 * Draw this image as part of a collection of images (rotation is ignored).
+	 * Draw this image as part of a collection of images (getRotation is ignored).
 	 * 
 	 * @param x The x location to draw the image at
 	 * @param y The y location to draw the image at
