@@ -6,14 +6,15 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.ARBShaderObjects;
 import org.lwjgl.opengl.ARBVertexShader;
 import org.lwjgl.opengl.ContextCapabilities;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GL32;
 import org.lwjgl.opengl.GLContext;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.SlickException;
@@ -28,6 +29,13 @@ import org.newdawn.slick.util.ResourceLoader;
  */
 public class ShaderProgram {
 
+	/** The vertex shader type (GL20.GL_VERTEX_SHADER). */
+	public static final int VERTEX_SHADER = GL20.GL_VERTEX_SHADER;
+	/** The fragment shader type (GL20.GL_FRAGMENT_SHADER). */
+	public static final int FRAGMENT_SHADER = GL20.GL_FRAGMENT_SHADER;
+	/** The geometry shader type (GL32.GL_GEOMETRY_SHADER). */
+	public static final int GEOMETRY_SHADER = GL32.GL_GEOMETRY_SHADER;
+	
 	private static boolean strict = true;
 	
 	/**
@@ -69,20 +77,31 @@ public class ShaderProgram {
 	}
 	
 	/**
-	 * Disables all shader use.
+	 * Disables shaders.
 	 */
-	public static void bindNone() {
+	public static void unbind() {
 		ARBShaderObjects.glUseProgramObjectARB(0);
 	}
 	
+	/** The OpenGL handle for this shader program object. */
 	protected int program;
-	
+	/** The log for this program. */
 	protected String log = "";
-	
+	/** A map of uniforms by <name, int>. */
 	protected HashMap<String, Integer> uniforms = new HashMap<String, Integer>();
+	/** A map of attributes by <name, int>. */
 	protected HashMap<String, Integer> attributes = new HashMap<String, Integer>();
+	/** The vertex shader source. */
+	protected String vertShaderSource;
+	/** The fragment shader source. */
+	protected String fragShaderSource;
+	/** The OpenGL handle for this program's vertex shader object. */
+	protected int vert;
+	/** The OpenGL handle for this program's fragment shader object. */
+	protected int frag;
 	
-	protected Shader vert, frag;
+	private FloatBuffer buf4;
+	private IntBuffer ibuf4;
 	
 	/**
 	 * A convenience method to load a ShaderProgram from two text files; this uses
@@ -138,164 +157,144 @@ public class ShaderProgram {
      * source code. The given source code is compiled, then the shaders attached
      * and linked. 
      * 
+     * If shaders are not supported on this system (isSupported returns false), 
+     * a SlickException will be thrown.
+     * 
      * If one of the shaders does not compile successfully, a SlickException will be thrown.
      * 
-     * If the shaders are null or invalid (i.e. have been released), then this
-     * will throw an IllegalArgumentException. If shaders are not supported
-     * on this system (isSupported returns false), a SlickException will be thrown.
-     * If the specified <tt>vert</tt> shader is not of type VERTEX_SHADER, or 
-     * <tt>frag</tt> not of type FRAGMENT_SHADER, an IllegalArgumentException
-     * will be thrown.
+     * If there was a problem in linking the shaders to the program, a SlickException will
+     * be thrown and the program will be deleted.
+     * 
      * @param vertexShaderSource the shader code to compile, attach and link
      * @param fragShaderSource the frag code to compile, attach and link
      * @throws SlickException if there was an issue
      * @throws IllegalArgumentException if there was an issue
      */
     public ShaderProgram(String vertexShaderSource, String fragShaderSource) throws SlickException {
-    	this(new Shader(Shader.VERTEX_SHADER, vertexShaderSource),
-    		 new Shader(Shader.FRAGMENT_SHADER, fragShaderSource));
+    	if (vertexShaderSource==null || fragShaderSource==null) 
+			throw new IllegalArgumentException("shader source must be non-null");
+    	if (!isSupported())
+			throw new SlickException("no shader support found; driver does not support extension GL_ARB_shader_objects");
+		
+    	this.vertShaderSource = vertexShaderSource;
+    	this.fragShaderSource = fragShaderSource;
+    	vert = compileShader(VERTEX_SHADER, vertexShaderSource);
+    	frag = compileShader(FRAGMENT_SHADER, fragShaderSource);
+		program = createProgram();
+		try {
+			linkProgram();
+		} catch (SlickException e) {
+			release();
+			throw e;
+		}
+		if (log!=null && log.length()!=0)
+			Log.warn("GLSL Info: "+log);
     }
     
-    /**
-     * Creates a new shader program with the given vertex and fragment shaders.
-     * The program is linked immediately. To create a program without immediately
-     * linking shaders, use the empty ShaderProgram constructor.
-     * 
-     * If the shaders are null or invalid (i.e. have been released), then this
-     * will throw an IllegalArgumentException. If shaders are not supported
-     * on this system (isSupported returns false), a SlickException will be thrown.
-     * If the specified <tt>vert</tt> shader is not of type VERTEX_SHADER, or 
-     * <tt>frag</tt> not of type FRAGMENT_SHADER, an IllegalArgumentException
-     * will be thrown.
-     * @param vert the shader program to attach and link
-     * @param frag the frag program to attach and link
-     * @throws SlickException if there was an issue
-     * @throws IllegalArgumentException if there was an issue
-     */
-	public ShaderProgram(Shader vert, Shader frag) throws SlickException {
-		//do some error checking before we tell OpenGL to create the program
-		if (!isSupported())
-			throw new SlickException("no shader support found; driver does not support extension GL_ARB_shader_objects");
-		if (vert==null || frag==null || !vert.valid() || !frag.valid()) {
-			throw new IllegalArgumentException("shaders must be non-null and valid before linking");
-		}
-		if (vert.getType()!=Shader.VERTEX_SHADER)
-			throw new IllegalArgumentException("vertex shader not of type VERTEX_SHADER");
-		if (frag.getType()!=Shader.FRAGMENT_SHADER)
-			throw new IllegalArgumentException("vertex shader not of type FRAGMENT_SHADER");
-		create();
-		
-		this.vert = vert;
-		this.frag = frag;
-		link();
+	/**
+	 * Subclasses may wish to implement this to manually handle program/shader creation, compiling, and linking.
+	 * This constructor does nothing; users will need to call compileShader, createProgram and linkProgram manually.
+	 * @throws SlickException
+	 */
+	protected ShaderProgram() {
 	}
 	
 	/**
-	 * Creates a program object without linking any shaders. Vertex and fragment shaders should 
-	 * be set before attempting to link() this program.
-	 * 
-	 * @throws SlickException
+	 * Creates a shader program and returns its OpenGL handle. If the result is zero, an exception will be thrown.
+	 * @return the OpenGL handle for the newly created shader program
+	 * @throws SlickException if the result is zero
 	 */
-	public ShaderProgram() throws SlickException {
-		create();
-	}
-	
-	private void create() throws SlickException {
+	protected int createProgram() throws SlickException {
 		if (!isSupported())
 			throw new SlickException("no shader support found; driver does not support extension GL_ARB_shader_objects");
-		program = ARBShaderObjects.glCreateProgramObjectARB();
+		int program = ARBShaderObjects.glCreateProgramObjectARB();
 		if (program == 0)
 			throw new SlickException("could not create program; check ShaderProgram.isSupported()");
+		return program;
 	}
 	
+	private String shaderTypeString(int type) {
+		if (type==FRAGMENT_SHADER) return "FRAGMENT_SHADER";
+		if (type==GEOMETRY_SHADER) return "GEOMETRY_SHADER";
+		else if (type==VERTEX_SHADER) return "VERTEX_SHADER";
+		else return "shader";
+	}
 	
 	/**
-	 * Compiles this program by attaching the current Frag/Vertex shaders,
-	 * linking the program, and detaching the shaders (since they are now linked
-	 * to the program).
+	 * Compiles a shader from source and returns its handle. If the compilation failed, 
+	 * a SlickException will be thrown. If the compilation had error, info or warnings messages,
+	 * they will be appended to this program's log.
+	 *  
+	 * @param type the type to use in compilation
+	 * @param source the source code to compile
+	 * @return the resulting ID
+	 * @throws SlickException if compilation was unsuccessful
+	 */
+	protected int compileShader(int type, String source) throws SlickException {
+		int shader = ARBShaderObjects.glCreateShaderObjectARB(type);
+		if (shader==0) 
+			throw new SlickException("could not create shader object; check ShaderProgram.isSupported()");
+		ARBShaderObjects.glShaderSourceARB(shader, source);
+		ARBShaderObjects.glCompileShaderARB(shader);
+		int comp = ARBShaderObjects.glGetObjectParameteriARB(shader, GL20.GL_COMPILE_STATUS);
+		int len = ARBShaderObjects.glGetObjectParameteriARB(shader, GL20.GL_INFO_LOG_LENGTH);
+		String t = shaderTypeString(type);
+		String err = ARBShaderObjects.glGetInfoLogARB(shader, len); 
+		if (err!=null&&err.length()!=0) 
+			log += t+" compile log:\n"+err+"\n";
+		if (comp==GL11.GL_FALSE)
+			throw new SlickException(log);
+		return shader;
+	}
+	
+	/**
+	 * Called to attach vertex and fragment; users may override this for more specific purposes.
+	 */
+	protected void attachShaders() {
+		ARBShaderObjects.glAttachObjectARB(getID(), vert);
+		ARBShaderObjects.glAttachObjectARB(getID(), frag);
+	}
+	
+	/**
+	 * Calls attachShaders and links the program.
 	 * 
-	 * @throws IllegalStateException
-	 *             if we are trying to link an invalid (released) program, or if
-	 *             the current shaders are null/invalid
 	 * @throws SlickException
+	 *             if this program is invalid (released) or
 	 *             if the link was unsuccessful
 	 */
-	public void link() throws SlickException {
+	protected void linkProgram() throws SlickException {
 		if (!valid())
-			throw new IllegalStateException("trying to link a released program");
-		if (vert==null || frag==null || !vert.valid() || !frag.valid())
-			throw new IllegalArgumentException("vertex and frag shaders must be non-null and valid before linking");
+			throw new SlickException("trying to link an invalid (i.e. released) program");
 		
 		uniforms.clear();
 		attributes.clear();
 		
-		vert.attach(this);
-		frag.attach(this);
+		attachShaders();
+
         ARBShaderObjects.glLinkProgramARB(program);
-        
-        //GL20.glValidateProgram(program);
         int comp = ARBShaderObjects.glGetObjectParameteriARB(program, GL20.GL_LINK_STATUS);
-        
-        //shaders no longer need to be attached to the program
-        vert.detach(this);
-        frag.detach(this);
         int len = ARBShaderObjects.glGetObjectParameteriARB(program, GL20.GL_INFO_LOG_LENGTH);
-		log += ARBShaderObjects.glGetInfoLogARB(program, len);
+		String err = ARBShaderObjects.glGetInfoLogARB(program, len);
+		if (err!=null&&err.length()!=0) log = err + "\n" + log;
+		if (log!=null) log = log.trim();
         if (comp==GL11.GL_FALSE) 
-			throw new SlickException("ERROR: Error in linking shaders\n"+log);
-        else if (log!=null&&log.length()!=0)
-			Log.warn("GLSL link warning: "+log);
-		fetchUniforms();
+			throw new SlickException(log);
+        
+        fetchUniforms();
 		fetchAttributes();
 	}
 	
 	/**
-	 * Returns the log info 
-	 * @return the log info for this program object
+	 * Returns the full log of compiling/linking errors, info, warnings, etc.
+	 * @return the full log of this ShaderProgram
 	 */
-	public String getLinkLog() {
+	public String getLog() {
 		return log;
 	}
 	
 	/**
-	 * Concats the shader's compile info and this program's link info and returns the result.
-	 * @return the full log of this ShaderProgram
-	 */
-	public String getLog() {
-		String s = "";
-		if (vert!=null)
-			s += vert.getCompileLog();
-		if (frag!=null)
-			s += frag.getCompileLog();
-		return s + getLinkLog();
-	}
-	
-	/**
-	 * Sets the vertex shader to be used on next link. This will have no effect until
-	 * link() is called, in which case it will be attached to the program before linking
-	 * (and then detached from the program after linking).
-	 * @param shader the new vertex shader
-	 */
-	public void setVertexShader(Shader shader) {
-		if (shader.getType()!=Shader.VERTEX_SHADER)
-			throw new IllegalArgumentException("vertex shader not of type VERTEX_SHADER");
-		this.vert = shader;
-	}
-	
-	/**
-	 * Sets the fragment shader to be used on next link. This will have no effect until
-	 * link() is called, in which case it will be attached to the program before linking
-	 * (and then detached from the program after linking).
-	 * @param shader the new fragment shader
-	 */
-	public void setFragmentShader(Shader shader) {
-		if (shader.getType()!=Shader.FRAGMENT_SHADER)
-			throw new IllegalArgumentException("fragment shader not of type FRAGMENT_SHADER");
-		this.frag = shader;
-	}
-	
-	/**
-	 * Enables this shader for use. Only one shader can be active at a time. 
+	 * Enables this shader for use -- only one shader can be bound at a time. Calling
+	 * bind() when another program is bound will simply make this object the active program.
 	 * @throw IllegalStateException if this program is invalid
 	 */
 	public void bind() {
@@ -303,54 +302,77 @@ public class ShaderProgram {
 			throw new IllegalStateException("trying to enable a program that is not valid");
 		ARBShaderObjects.glUseProgramObjectARB(program);
 	}
-
-	/**
-	 * Unbinds this program and disables shaders via bindNone. This isn't necessary to
-	 * call immediately before another shader bind(), as only one shader can be active
-	 * at a time.
-	 */
-	public void unbind() {
-		ShaderProgram.bindNone();
-	}
 	
 	/**
-	 * Releases this program and the current vertex/fragment shaders associated with it. 
-	 * If you wish to only release the program (i.e. not the shaders as well), then use 
-	 * releaseProgram(). Alternatively, to only release the associated shaders, use
-	 * releaseShaders().
-	 * Programs shouldn't be used after being released.
+	 * Disables shaders (unbind), then detaches and releases the shaders associated with this program. 
+	 * This can be called after linking a program in order to free up memory (as the shaders are no longer needed),
+	 * however, since it is not a commonly used feature and thus not well tested on all drivers,
+	 * it should be used with caution.
+	 * Shaders shouldn't be used after being released.
 	 */
-	public void release() {
-		if (program!=0) {
-			releaseShaders();
-			releaseProgram();
+	public void releaseShaders() {
+		ShaderProgram.unbind();
+		if (vert!=0) {
+			ARBShaderObjects.glDetachObjectARB(getID(), vert);
+			ARBShaderObjects.glDeleteObjectARB(vert);
+			vert = 0;
+		}
+		if (frag!=0) {
+			ARBShaderObjects.glDetachObjectARB(getID(), frag);
+			ARBShaderObjects.glDeleteObjectARB(frag);
+			frag = 0;
 		}
 	}
 	
 	/**
-	 * Releases the vertex/fragment shaders associated with this program. 
-	 * If you wish to only release the program (i.e. not the shaders), then use 
-	 * releaseProgram(). To release the program and its associated shaders, use
-	 * release().
+	 * If this program has not yet been released, this will disable shaders (unbind), 
+	 * then releases this program and its shaders. To only release
+	 * the shaders (not the program itself), call releaseShaders().
+	 * Programs will be considered "invalid" after being released, and should no longer be used.
 	 */
-	public void releaseShaders() {
-		vert.release();
-		frag.release();
-	}
-	
-	/**
-	 * Releases this program and sets its ID to zero -- this will not release the current shaders.
-	 * Programs shouldn't be used after being released.
-	 */
-	public void releaseProgram() {
+	public void release() {
 		if (program!=0) {
+			ShaderProgram.unbind();
+			releaseShaders();
 			ARBShaderObjects.glDeleteObjectARB(program);
 			program = 0;
 		}
 	}
 	
 	/**
-	 * The ID of a shader, the value given by glCreateProgram.
+	 * Returns the OpenGL handle for this program's vertex shader.
+	 * @return the vertex ID
+	 */
+	public int getVertexShaderID() {
+		return vert;
+	}
+
+	/**
+	 * Returns the OpenGL handle for this program's fragment shader.
+	 * @return the fragment ID
+	 */
+	public int getFragmentShaderID() {
+		return frag;
+	}
+
+	/**
+	 * Returns the source code for the vertex shader.
+	 * @return the source code
+	 */
+	public String getVertexShaderSource() {
+		return vertShaderSource;
+	}
+
+	/**
+	 * Returns the source code for the fragment shader.
+	 * @return the source code
+	 */
+	public String getFragmentShaderSource() {
+		return fragShaderSource;
+	}
+	
+	/**
+	 * Returns the OpenGL handle for this shader program
 	 * @return the program ID
 	 */
 	public int getID() {
@@ -366,7 +388,6 @@ public class ShaderProgram {
 	public boolean valid() {
 		return program != 0;
 	}
-	
 	
 	private void fetchUniforms() {
 		int len = ARBShaderObjects.glGetObjectParameteriARB(program, GL20.GL_ACTIVE_UNIFORMS);
@@ -443,26 +464,6 @@ public class ShaderProgram {
 	}
 	
 	/**
-	 * Returns the vertex shader last used by this shader program.
-	 * Note that ShaderProgram does not hold on to shaders; they
-	 * are detached after linking.
-	 * @return the vertex shader
-	 */
-	public Shader getVertexShader() {
-		return vert;
-	}
-	
-	/**
-	 * Returns the fragment shader last used by this shader program. 
-	 * Note that ShaderProgram does not hold on to shaders; they
-	 * are detached after linking.
-	 * @return the fragment shader
-	 */
-	public Shader getFragmentShader() {
-		return frag;
-	}
-	
-	/**
 	 * Enables the vertex array -- in strict mode, if the vertex attribute
 	 * is not found (or it's inactive), an IllegalArgumentException will
 	 * be thrown. If strict mode is disabled and the vertex attribute 
@@ -517,7 +518,81 @@ public class ShaderProgram {
 	public void setUniform2f(String name, Vector2f vec) {
 		setUniform2f(name, vec.x, vec.y);
 	}
+	
+	private FloatBuffer uniformf(String name) {
+		if (buf4==null)
+			buf4 = BufferUtils.createFloatBuffer(4);
+		buf4.clear();
+		getUniform(name, buf4);
+		return buf4;
+	}
+	
+	private IntBuffer uniformi(String name) {
+		//TODO: add setters/getters for ivec2, ivec3, ivec4
+		if (ibuf4==null)
+			ibuf4 = BufferUtils.createIntBuffer(4);
+		ibuf4.clear();
+		getUniform(name, ibuf4);
+		return ibuf4;
+	}
 
+	/**
+	 * A convenience method to retrieve an integer/sampler2D uniform.
+	 * @param name the uniform name
+	 * @return the value
+	 */
+	public int getUniform1i(String name) {
+		return uniformi(name).get(0);
+	}
+	
+	/**
+	 * A convenience method to retrieve a float uniform.
+	 * @param name the uniform name
+	 * @return the value
+	 */
+	public float getUniform1f(String name) {
+		return uniformf(name).get(0);
+	}
+	
+	/**
+	 * A convenience method to retrieve a vec2 uniform;
+	 * for maximum performance and memory efficiency you 
+	 * should use getUniform(String, FloatBuffer) with a shared
+	 * buffer.
+	 * @param name the name of the uniform
+	 * @return a newly created float[] array with 2 elements; e.g. (x, y)
+	 */
+	public float[] getUniform2f(String name) {
+		FloatBuffer buf = uniformf(name);
+		return new float[] { buf.get(0), buf.get(1) };
+	}
+
+	/**
+	 * A convenience method to retrieve a vec3 uniform;
+	 * for maximum performance and memory efficiency you 
+	 * should use getUniform(String, FloatBuffer) with a shared
+	 * buffer.
+	 * @param name the name of the uniform
+	 * @return a newly created float[] array with 3 elements; e.g. (x, y, z)
+	 */
+	public float[] getUniform3f(String name) {
+		FloatBuffer buf = uniformf(name);
+		return new float[] { buf.get(0), buf.get(1), buf.get(2) };
+	}
+
+	/**
+	 * A convenience method to retrieve a vec4 uniform;
+	 * for maximum performance and memory efficiency you 
+	 * should use getUniform(String, FloatBuffer) with a shared
+	 * buffer.
+	 * @param name the name of the uniform
+	 * @return a newly created float[] array with 4 elements; e.g. (r, g, b, a)
+	 */
+	public float[] getUniform4f(String name) {
+		FloatBuffer buf = uniformf(name);
+		return new float[] { buf.get(0), buf.get(1), buf.get(2), buf.get(3) };
+	}
+	
 	/**
 	 * Retrieves data from a uniform and places it in the given buffer. If 
 	 * strict mode is enabled, this will throw an IllegalArgumentException
@@ -679,22 +754,39 @@ public class ShaderProgram {
 		ARBShaderObjects.glUniform4iARB(id, a, b, c, d);
 	}
 	
+	/**
+	 * Sets a uniform matrix2 with the given name and transpose.
+	 * @param name the name to use
+	 * @param transpose whether to transpose the matrix
+	 * @param buf the buffer representing the matrix2
+	 */
 	public void setMatrix2(String name, boolean transpose, FloatBuffer buf) {
 		int id = getUniformID(name);
 		if (id==-1) return;
 		ARBShaderObjects.glUniformMatrix2ARB(id, transpose, buf);
 	}
-	
+
+	/**
+	 * Sets a uniform matrix3 with the given name and transpose.
+	 * @param name the name to use
+	 * @param transpose whether to transpose the matrix
+	 * @param buf the buffer representing the matrix3
+	 */
 	public void setMatrix3(String name, boolean transpose, FloatBuffer buf) {
 		int id = getUniformID(name);
 		if (id==-1) return;
 		ARBShaderObjects.glUniformMatrix3ARB(id, transpose, buf);
 	}
 
+	/**
+	 * Sets a uniform matrix4 with the given name and transpose.
+	 * @param name the name to use
+	 * @param transpose whether to transpose the matrix
+	 * @param buf the buffer representing the matrix4
+	 */
 	public void setMatrix4(String name, boolean transpose, FloatBuffer buf) {
 		int id = getUniformID(name);
 		if (id==-1) return;
 		ARBShaderObjects.glUniformMatrix4ARB(id, transpose, buf);
 	}
-	// TODO: include more setUniforms/getUniforms
 }

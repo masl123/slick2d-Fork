@@ -8,7 +8,6 @@ import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
-import org.newdawn.slick.opengl.shader.Shader;
 import org.newdawn.slick.opengl.shader.ShaderProgram;
 import org.newdawn.slick.util.Log;
 
@@ -73,15 +72,16 @@ public class ShaderTestAdvanced extends BasicGame {
 				blurHoriz.setUniform1f("resolution", container.getWidth()); //width of img
 				blurHoriz.setUniform1f("radius", radius);
 				blurHoriz.setUniform1f("alpha", alpha);
-				blurHoriz.unbind();
 				
 				//set up our uniforms for vertical blur... 
 				blurVert.bind();
 				blurVert.setUniform1i("tex0", 0); //texture 0
 				blurVert.setUniform1f("resolution", container.getHeight()); //height of img
 				blurVert.setUniform1f("radius", radius);
+				alpha = 0.75f;
 				blurVert.setUniform1f("alpha", alpha);
-				blurVert.unbind();
+				
+				ShaderProgram.unbind();
 			} catch (SlickException e) {
 				log = e.getMessage();
 				Log.error(log);
@@ -129,15 +129,14 @@ public class ShaderTestAdvanced extends BasicGame {
 				blurHoriz.setUniform1f("radius", radius);
 				blurHoriz.setUniform1f("alpha", alpha);
 				screenGraphics.drawImage(postImage, 0, 0);
-				blurHoriz.unbind();
 			}
 			if (shaderWorks && useVert) {
 				blurVert.bind();
 				blurVert.setUniform1f("radius", radius);
 				blurVert.setUniform1f("alpha", alpha);
 				screenGraphics.drawImage(postImage, 0, 0);
-				blurVert.unbind();			
 			}
+			ShaderProgram.unbind();
 		}
 		
 		

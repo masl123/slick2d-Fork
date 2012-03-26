@@ -1,5 +1,7 @@
 package org.newdawn.slick.tests;
 
+import java.util.Arrays;
+
 import org.newdawn.slick.AppGameContainer;
 import org.newdawn.slick.BasicGame;
 import org.newdawn.slick.Color;
@@ -31,6 +33,7 @@ public class ShaderTest extends BasicGame {
 	private boolean shaderWorks, useShader=true;
 	private boolean supported = false;
 	
+	private float elapsed;
 	
 	private GameContainer container;
 	
@@ -62,17 +65,15 @@ public class ShaderTest extends BasicGame {
 			program = ShaderProgram.loadProgram("testdata/shaders/invert.vert", "testdata/shaders/invert.frag");
 			shaderWorks = true;
 			
-			//if we've got here it means our program was linked successfully
-			//to save some memory we can release the shaders objects since they are now stored in the program
-			program.releaseShaders();
-			
 			//good idea to print/display the log anyways incase there are warnings..
 			log = program.getLog();
+			if (log!=null&&log.length()!=0)
+				Log.warn(log);
 			
 			//set up our uniforms...
 			program.bind();
 			program.setUniform1i("tex0", 0); //texture 0
-			program.unbind();
+			ShaderProgram.unbind();
 		} catch (SlickException e) {
 			log = e.getMessage();
 			Log.error(log);
@@ -90,7 +91,7 @@ public class ShaderTest extends BasicGame {
 		
 		//unbind the shader so that usual stuff renders OK
 		if (shaderWorks && useShader)
-			program.unbind();
+			ShaderProgram.unbind();
 		
 		if (shaderWorks)
 			g.drawString("Space to toggle shader\nPress R to reload shaders", 10, 25);
@@ -99,7 +100,7 @@ public class ShaderTest extends BasicGame {
 		else
 			g.drawString("Oops, shader didn't load!", 10, 25);
 		if (log!=null && log.length()!=0)
-			g.drawString("Shader Log:\n"+log, 10, 75);
+			g.drawString(log, 10, 75);
 	}
 
 	@Override
