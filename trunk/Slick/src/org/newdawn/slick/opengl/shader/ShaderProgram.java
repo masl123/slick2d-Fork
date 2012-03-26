@@ -15,12 +15,10 @@ import org.lwjgl.opengl.ContextCapabilities;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL32;
-import org.lwjgl.opengl.GL41;
 import org.lwjgl.opengl.GLContext;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Vector2f;
-import org.newdawn.slick.opengl.renderer.Renderer;
 import org.newdawn.slick.util.Log;
 import org.newdawn.slick.util.ResourceLoader;
 
@@ -80,7 +78,7 @@ public class ShaderProgram {
 	 * Disables shaders.
 	 */
 	public static void unbind() {
-		Renderer.get().glUseProgram(0);
+		ARBShaderObjects.glUseProgramObjectARB(0);
 	}
 	
 	/** The OpenGL handle for this shader program object. */
@@ -300,7 +298,7 @@ public class ShaderProgram {
 	public void bind() {
 		if (!valid())
 			throw new IllegalStateException("trying to enable a program that is not valid");
-		Renderer.get().glUseProgram(program);
+		ARBShaderObjects.glUseProgramObjectARB(program);
 	}
 	
 	/**
