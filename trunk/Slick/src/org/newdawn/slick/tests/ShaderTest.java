@@ -1,6 +1,8 @@
 package org.newdawn.slick.tests;
 
-import java.util.Arrays;
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
 
 import org.newdawn.slick.AppGameContainer;
 import org.newdawn.slick.BasicGame;
@@ -53,6 +55,8 @@ public class ShaderTest extends BasicGame {
 		}
 	}
 	
+
+	
 	private void reload() {
 		if (!supported)
 			return;
@@ -74,7 +78,7 @@ public class ShaderTest extends BasicGame {
 			program.bind();
 			program.setUniform1i("tex0", 0); //texture 0
 			ShaderProgram.unbind();
-		} catch (SlickException e) {
+		} catch (Exception e) {
 			log = e.getMessage();
 			Log.error(log);
 			shaderWorks = false;
