@@ -130,25 +130,30 @@ public class ShaderProgram {
 	}
 	
 	/**
-	 * Loads the given input stream into a source code string, with each line separated
-	 * by new-line ('\n') characters.
+	 * Loads the given input stream into a source code string.
 	 * @param in the input stream
 	 * @return the resulting source code String 
 	 * @throws SlickException if there was an issue reading the source
+	 * @author Nitram
 	 */
     public static String loadSource(InputStream in) throws SlickException {
-    	try {
-	    	BufferedReader br = new BufferedReader(new InputStreamReader(in));
-	    	String line = "";
-	    	String txt = "";
-	    	while ((line=br.readLine()) != null)
-	    		txt += line + "\n";
-	    	br.close();
-	    	return txt.trim();
-    	} catch (IOException e) {
-    		throw new SlickException("could not load source file");
-    	}
-    }
+		try {
+			final StringBuffer sBuffer = new StringBuffer();
+			final BufferedReader br = new BufferedReader(new InputStreamReader(
+					in));
+			final char[] buffer = new char[1024];
+
+			int cnt;
+			while ((cnt = br.read(buffer, 0, buffer.length)) > -1) {
+				sBuffer.append(buffer, 0, cnt);
+			}
+			br.close();
+			return sBuffer.toString();
+		} catch (IOException e) {
+			throw new SlickException("could not load source file");
+		}
+	}
+    
 
     /**
      * Creates a new shader program with the given vertex and fragment shader
@@ -171,8 +176,8 @@ public class ShaderProgram {
     public ShaderProgram(String vertexShaderSource, String fragShaderSource) throws SlickException {
     	if (vertexShaderSource==null || fragShaderSource==null) 
 			throw new IllegalArgumentException("shader source must be non-null");
-    	if (!isSupported())
-			throw new SlickException("no shader support found; driver does not support extension GL_ARB_shader_objects");
+//    	if (!isSupported())
+//			throw new SlickException("no shader support found; driver does not support extension GL_ARB_shader_objects");
 		
     	this.vertShaderSource = vertexShaderSource;
     	this.fragShaderSource = fragShaderSource;
