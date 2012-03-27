@@ -111,7 +111,7 @@ public class ShaderProgram {
 	 * 				or linking the program
 	 */
 	public static ShaderProgram loadProgram(String vertFile, String fragFile) throws SlickException {
-		return new ShaderProgram(loadSource(vertFile), loadSource(fragFile));
+		return new ShaderProgram(readFile(vertFile), readFile(fragFile));
 	}
 	
 	/**
@@ -121,9 +121,9 @@ public class ShaderProgram {
 	 * @return the resulting source code String 
 	 * @throws SlickException if there was an issue reading the source
 	 */
-	public static String loadSource(String ref) throws SlickException {
+	public static String readFile(String ref) throws SlickException {
 		InputStream in = ResourceLoader.getResourceAsStream(ref);
-		try { return loadSource(in); }
+		try { return readFile(in); }
 		catch (SlickException e) { 
 			throw new SlickException("could not load source file: "+ref);
 		}
@@ -136,7 +136,7 @@ public class ShaderProgram {
 	 * @throws SlickException if there was an issue reading the source
 	 * @author Nitram
 	 */
-    public static String loadSource(InputStream in) throws SlickException {
+    public static String readFile(InputStream in) throws SlickException {
 		try {
 			final StringBuffer sBuffer = new StringBuffer();
 			final BufferedReader br = new BufferedReader(new InputStreamReader(
@@ -176,8 +176,8 @@ public class ShaderProgram {
     public ShaderProgram(String vertexShaderSource, String fragShaderSource) throws SlickException {
     	if (vertexShaderSource==null || fragShaderSource==null) 
 			throw new IllegalArgumentException("shader source must be non-null");
-//    	if (!isSupported())
-//			throw new SlickException("no shader support found; driver does not support extension GL_ARB_shader_objects");
+    	if (!isSupported())
+			throw new SlickException("no shader support found; driver does not support extension GL_ARB_shader_objects");
 		
     	this.vertShaderSource = vertexShaderSource;
     	this.fragShaderSource = fragShaderSource;
