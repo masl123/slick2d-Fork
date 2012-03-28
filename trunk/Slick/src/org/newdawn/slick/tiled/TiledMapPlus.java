@@ -219,6 +219,7 @@ public class TiledMapPlus extends TiledMap {
 
 	/**
 	 * Writes the current TiledMap to a stream
+	 * <br> Map is written using GZIP Base64 encoding in TiledMap V0.8
 	 * 
 	 * @author liamzebedee
 	 * @param stream
@@ -233,14 +234,14 @@ public class TiledMapPlus extends TiledMap {
 
 			Element map = doc.createElement("map");
 			map.setAttribute("version", "1.0");
-			map.setAttribute("orientation", "orthogonal");
+			if(this.orientation == TiledMap.ORTHOGONAL) map.setAttribute("orientation", "orthoganal");
+			else if(this.orientation == TiledMap.ISOMETRIC) map.setAttribute("orientation", "isometric"); 
 			map.setAttribute("tilewidth", "" + this.tileWidth);
 			map.setAttribute("tileheight", "" + this.tileHeight);
 			map.setAttribute("width", "" + this.width);
 			map.setAttribute("height", "" + this.height);
 			doc.appendChild(map);
-			for (int i = 0; i < this.tileSets.size(); i++) { // Loop through all
-																// tilesets
+			for (int i = 0; i < this.tileSets.size(); i++) { // Loop through all tilesets
 				TileSet tilesetData = this.tileSets.get(i);
 				Element tileset = doc.createElement("tileset");
 				tileset.setAttribute("firstgid", "" + tilesetData.firstGID);
@@ -258,6 +259,19 @@ public class TiledMapPlus extends TiledMap {
 				tileset.appendChild(image);
 				int tileCount = tilesetData.tiles.getHorizontalCount()
 						* tilesetData.tiles.getVerticalCount();
+				Element tilesetProperties = doc.createElement("properties");
+				Properties tilesetPropertiesData = tilesetData.tilesetProperties;
+				if (tilesetProperties != null) {
+					Enumeration propertyEnum = tilesetPropertiesData.propertyNames();
+					while (propertyEnum.hasMoreElements()) {
+						String key = (String) propertyEnum.nextElement();
+						Element tileProperty = doc.createElement("property");
+						tileProperty.setAttribute("name", key);
+						tileProperty.setAttribute("value", tilesetPropertiesData.getProperty(key));
+						tilesetProperties.appendChild(tileProperty);
+					}
+					tileset.appendChild(tilesetProperties);
+				}
 				if (tileCount == 1) {
 					tileCount++;
 				}
@@ -294,6 +308,9 @@ public class TiledMapPlus extends TiledMap {
 				layer.setAttribute("name", layerData.name);
 				layer.setAttribute("width", "" + layerData.width);
 				layer.setAttribute("height", "" + layerData.height);
+				layer.setAttribute("opacity", "" + layerData.opacity);
+				if(layerData.visible) layer.setAttribute("visible", "1");
+				else layer.setAttribute("visible", "0");
 				Element data = doc.createElement("data");
 
 				ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -317,26 +334,61 @@ public class TiledMapPlus extends TiledMap {
 				map.appendChild(layer);
 			}
 			for (int objectGroupI = 0; objectGroupI < this.objectGroups.size(); objectGroupI++) {
-				Element objectgroup = doc.createElement("objectgroup");
-				ObjectGroup objectGroup = objectGroups.get(objectGroupI);
-				objectgroup.setAttribute("color", "white");
+				Element objectGroup = doc.createElement("objectgroup");
+				ObjectGroup objectGroupData = objectGroups.get(objectGroupI);
+				objectGroup.setAttribute("color", "white");
 				// It doesn't appear we use a color value,
 				// but its in the format so...
-				objectgroup.setAttribute("name", objectGroup.name);
-				objectgroup.setAttribute("width", "" + objectGroup.width);
-				objectgroup.setAttribute("height", "" + objectGroup.height);
+				objectGroup.setAttribute("name", objectGroupData.name);
+				objectGroup.setAttribute("width", "" + objectGroupData.width);
+				objectGroup.setAttribute("height", "" + objectGroupData.height);
+				objectGroup.setAttribute("opacity", "" + objectGroupData.opacity);
+				if(objectGroupData.visible) objectGroup.setAttribute("visible", "1");
+				else objectGroup.setAttribute("visible", "0");
+				objectGroup.setAttribute("color", "#"+
+						Float.toHexString(objectGroupData.color.r) +
+						Float.toHexString(objectGroupData.color.g) +
+						Float.toHexString(objectGroupData.color.b));
 
-				for (int groupObjectI = 0; groupObjectI < objectGroup.objects
+				for (int groupObjectI = 0; groupObjectI < objectGroupData.objects
 						.size(); groupObjectI++) {
 					Element object = doc.createElement("object");
-					GroupObject groupObject = objectGroup.objects
+					GroupObject groupObject = objectGroupData.objects
 							.get(groupObjectI);
-					object.setAttribute("name", groupObject.name);
-					object.setAttribute("type", groupObject.type);
 					object.setAttribute("x", "" + groupObject.x);
 					object.setAttribute("y", "" + groupObject.y);
-					object.setAttribute("width", "" + groupObject.width);
-					object.setAttribute("height", "" + groupObject.height);
+					switch(groupObject.objectType) {
+					case IMAGE:
+						object.setAttribute("gid", "" + groupObject.gid);
+						break;
+					case RECTANGLE:
+						object.setAttribute("name", groupObject.name);
+						object.setAttribute("type", groupObject.type);
+						object.setAttribute("width", "" + groupObject.width);
+						object.setAttribute("height", "" + groupObject.height);
+						break;
+					case POLYGON:
+						Element polygon = doc.createElement("polygon");
+						String polygonPoints = "";
+						for(int polygonPointIndex = 0; polygonPointIndex < groupObject.points.getPointCount() - 1; polygonPointIndex++) {
+							polygonPoints += groupObject.points.getPoint(polygonPointIndex)[0] + "," + 
+									groupObject.points.getPoint(polygonPointIndex)[1] + " ";
+						}
+						polygonPoints.trim();
+						polygon.setAttribute("points", polygonPoints);
+						break;
+					case POLYLINE:
+						Element polyline = doc.createElement("polyline");
+						String polylinePoints = "";
+						for(int polyLinePointIndex = 0; polyLinePointIndex < groupObject.points.getPointCount() - 1; polyLinePointIndex++) {
+							polylinePoints += groupObject.points.getPoint(polyLinePointIndex)[0] + "," + 
+									groupObject.points.getPoint(polyLinePointIndex)[1] + " ";
+						}
+						polylinePoints.trim();
+						polyline.setAttribute("points", polylinePoints);
+						break;
+					}
+					
 					if (groupObject.props != null) {
 						Element objectProps = doc.createElement("properties");
 						Enumeration propertyEnum = groupObject.props
@@ -352,10 +404,11 @@ public class TiledMapPlus extends TiledMap {
 						}
 						object.appendChild(objectProps);
 					}
-					objectgroup.appendChild(object);
+					objectGroup.appendChild(object);
+					
 				}
 
-				map.appendChild(objectgroup);
+				map.appendChild(objectGroup);
 			}
 			TransformerFactory transformerFactory = TransformerFactory
 					.newInstance();
