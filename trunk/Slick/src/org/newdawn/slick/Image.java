@@ -1554,17 +1554,21 @@ public class Image implements Renderable {
 	}
 	
 	/**
-	 * Draws an image according to a transform (Rotate, FlipX, FlipY)
-	 * 	Rotate	- ?
-	 * 	FlipX	- ?
-	 * 	FlipY	- ?
+	 * Draws an image according to a transform (Flip, FlipX, FlipY)
+	 * <li>	0x01 - Flip top-left corner with bottom right
+	 * <li> 0x02 - Flip on X axis
+	 * <li> 0x04 - Flip on Y axis
 	 * 
 	 * @author liamzebedee
 	 * @param x
+	 *            The x location to draw the image at
 	 * @param y
+	 *            The y location to draw the image at
 	 * @param width
+	 *            The width to render the image at
 	 * @param height
-	 * @param transform
+	 *            The height to render the image at
+	 * @param transform The transform to use (flip, flipX or flipY)
 	 */
 	public void drawEmbedded(float x, float y, float width, float height, byte transform) {
 		boolean rotate = (transform & 1) > 0;
