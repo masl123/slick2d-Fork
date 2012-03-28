@@ -263,6 +263,7 @@ public class Layer {
 					// LSB+1: Flip Y
 					// LSB+2: Flip X
 					byte b = (byte) ((data[sx + tx][sy + ty][2] & 0xE0000000L) >> 29);
+					set.tiles.setAlpha(this.opacity); // Sets opacity/alpha value
 					set.tiles.renderInUse(x + (tx * mapTileWidth), y
 							+ (ty * mapTileHeight) - tileOffsetY, sheetX,
 							sheetY, b);
