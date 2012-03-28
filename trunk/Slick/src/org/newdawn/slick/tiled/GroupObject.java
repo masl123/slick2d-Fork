@@ -22,9 +22,9 @@ public class GroupObject {
 	/** The type of this object - read from the XML */
 	public String type = "";
 	/** The x-coordinate of this object */
-	public int x;
+	public int x = 0;
 	/** The y-coordinate of this object */
-	public int y;
+	public int y = 0;
 	/** The width of this object */
 	public int width = 0;
 	/** The height of this object */
