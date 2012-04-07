@@ -164,6 +164,10 @@ public class TextureImpl implements Texture {
         setWidth();
     }
     
+    public ImageData.Format getImageFormat() {
+    	return format;
+    }
+    
     /**
 	 * @see org.newdawn.slick.opengl.Texture#getImageHeight()
 	 */
