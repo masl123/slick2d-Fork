@@ -450,12 +450,16 @@ public class AngelCodeFont implements Font {
 			if (charDef == null) {
 				continue;
 			}
-
-			if (lastCharDef != null) x += lastCharDef.getKerning(id);
+			if (lastCharDef != null) 
+				x += lastCharDef.getKerning(id);
+			else
+				x -= charDef.xoffset;
+			
 			lastCharDef = charDef;
 			
 			if ((i >= start) && (i <= end)) {
-				charDef.draw(x, y);
+				charDef.image.drawEmbedded(x + charDef.xoffset, y + charDef.yoffset, charDef.width, charDef.height);
+				
 			}
 
 			x += charDef.xadvance;
@@ -557,18 +561,21 @@ public class AngelCodeFont implements Font {
 				continue;
 			}
 
-			if (lastCharDef != null) width += lastCharDef.getKerning(id);
+			if (lastCharDef != null) 
+				width += lastCharDef.getKerning(id);
+//			else //first glyph
+//				width -= charDef.xoffset;
+//			
 			lastCharDef = charDef;
 			
 			//space characters have zero width, so use their xadvance instead
 			if (i < n - 1 || charDef.width==0) {
 				width += charDef.xadvance;
 			} else {
-				width += charDef.width;
+				width += charDef.width + charDef.xoffset;
 			}
 			maxWidth = Math.max(maxWidth, width);
 		}
-		
 		if (displayList != null) displayList.width = new Short((short)maxWidth);
 		
 		return maxWidth;
@@ -672,18 +679,6 @@ public class AngelCodeFont implements Font {
 		 */
 		public String toString() {
 			return "[CharDef id=" + id + " x=" + x + " y=" + y + "]";
-		}
-
-		/**
-		 * Draw this character embedded in a image draw
-		 * 
-		 * @param x
-		 *            The x position at which to draw the text
-		 * @param y
-		 *            The y position at which to draw the text
-		 */
-		public void draw(float x, float y) {
-			image.drawEmbedded(x + xoffset, y + yoffset, width, height);
 		}
 
 		/**

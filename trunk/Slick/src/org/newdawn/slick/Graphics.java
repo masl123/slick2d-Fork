@@ -7,9 +7,11 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.GL11;
 import org.newdawn.slick.geom.Rectangle;
 import org.newdawn.slick.geom.Shape;
 import org.newdawn.slick.geom.ShapeRenderer;
+import org.newdawn.slick.opengl.Texture;
 import org.newdawn.slick.opengl.TextureImpl;
 import org.newdawn.slick.opengl.renderer.LineStripRenderer;
 import org.newdawn.slick.opengl.renderer.Renderer;
@@ -1454,7 +1456,7 @@ public class Graphics {
 	
 	/**
 	 * Copy an area of the rendered screen into an image. The width and height of the area are assumed to match that of
-	 * the image
+	 * the image, and the destination offset is (0, 0).
 	 * 
 	 * @param target
 	 *            The target image
@@ -1464,11 +1466,38 @@ public class Graphics {
 	 *            The y position to copy from
 	 */
 	public void copyArea(Image target, int x, int y) {
-		int format = target.getTexture().hasAlpha() ? SGL.GL_RGBA : SGL.GL_RGB;
+		copyArea(target, x, y, 0, 0, target.getWidth(), target.getHeight());
+	}
+	
+	/**
+	 * Copies a sub-section of the rendered screen into the given image. The x/y offset determines where
+	 * on the target image to place the copied data; the width/height values determine how much to copy
+	 * from the screen.
+	 * 
+	 * Note that invalid values, such as a height that is larger than the image's texture, may lead to
+	 * unexpected results.
+	 * 
+	 * @param target the target image to copy the screen into
+	 * @param x the x position of the screen to start copying
+	 * @param y the y position of the screen to start copying
+	 * @param xoff the x destination on the target at which to place the copied data
+	 * @param yoff the y destination on the target at which to place the copied data
+	 * @param width the width of the data to copy from the screen
+	 * @param height the height of the data to copy from the screen
+	 * @author davedes
+	 */
+	public void copyArea(Image target, int x, int y, int xoff, int yoff, int width, int height) {
+		predraw();
+		Texture tex = target.getTexture();
 		target.bind();
-		GL.glCopyTexImage2D(SGL.GL_TEXTURE_2D, 0, format, x, screenHeight - (y + target.getHeight()), target.getTexture().getTextureWidth(),
-				target.getTexture().getTextureHeight(), 0);
-		target.ensureInverted();
+		if (isYFlipped()) {
+			GL11.glCopyTexSubImage2D(SGL.GL_TEXTURE_2D, 0, xoff, yoff, x, y, width, height);			
+		} else {
+			int yoff2 = target.getHeight()-height-yoff;
+			GL11.glCopyTexSubImage2D(SGL.GL_TEXTURE_2D, 0, xoff, yoff2, x, screenHeight - (y+height), width, height);
+			target.ensureInverted();
+		}
+		postdraw();
 	}
 	
 	/**
@@ -1717,5 +1746,9 @@ public class Graphics {
 	 */
 	public void destroy() {
 		
+	}
+	
+	protected boolean isYFlipped() {
+		return false;
 	}
 }

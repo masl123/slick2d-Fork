@@ -2,7 +2,9 @@ package org.newdawn.slick;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.IntBuffer;
 
+import org.lwjgl.BufferUtils;
 import org.newdawn.slick.opengl.EmptyImageData;
 import org.newdawn.slick.opengl.ImageData;
 import org.newdawn.slick.opengl.InternalTextureLoader;
@@ -21,6 +23,20 @@ import org.newdawn.slick.util.Log;
  */
 public class Image implements Renderable {
 
+
+	/**
+	 * Get the maximum size of an image supported by the underlying
+	 * hardware.
+	 * 
+	 * @return The maximum size of the textures supported by the underlying
+	 * hardware.
+	 */
+	public static final int getMaxSingleImageSize() {
+		IntBuffer buffer = BufferUtils.createIntBuffer(16);
+		GL.glGetInteger(SGL.GL_MAX_TEXTURE_SIZE, buffer);
+		return buffer.get(0);
+	}
+	
 	/**
 	 * Creates an image intended for use with offscreen rendering. Only one
 	 * texture is created (the FBO/PBuffer-bound texture which will be used
@@ -602,7 +618,7 @@ public class Image implements Renderable {
 	/**
 	 * Unlike the other drawEmbedded methods, this allows for the embedded image
 	 * to be rotated. This is done by applying a rotation transform to each 
-	 * vertex of the image. This ignroes getRotation but depends on the 
+	 * vertex of the image. This ignores getRotation but depends on the 
 	 * center x/y (scaled accordingly to the new width/height).
 	 * 
 	 * @param x the x to render the image at
@@ -674,9 +690,18 @@ public class Image implements Renderable {
 		}
 	}
 
+	/**
+	 * Draw this image as part of a collection of images (getRotation is ignored).
+	 * 
+	 * @param x The x location to draw the image at
+	 * @param y The y location to draw the image at
+	 */
+	public void drawEmbedded(float x,float y) {
+		drawEmbedded(x, y, getWidth(), getHeight());
+	}
 
 	/**
-	 * Draw this image as part of a collection of images (rotation is ignored).
+	 * Draw this image as part of a collection of images (getRotation is ignored).
 	 * 
 	 * @param x The x location to draw the image at
 	 * @param y The y location to draw the image at
@@ -1376,9 +1401,12 @@ public class Image implements Renderable {
 	 * Make sure the texture cordinates are inverse on the y axis
 	 */
 	public void ensureInverted() {
+		init();
 		if (textureHeight > 0) {
 			textureOffsetY = textureOffsetY + textureHeight;
 			textureHeight = -textureHeight;
+//			textureOffsetY = - height / (float)texture.getTextureHeight();
+//			System.out.println("blah "+textureOffsetY+" "+height+" "+textureHeight+" "+texture.getTextureHeight());
 		}
 	}
 
