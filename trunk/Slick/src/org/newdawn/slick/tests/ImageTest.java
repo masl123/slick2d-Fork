@@ -31,7 +31,7 @@ public class ImageTest extends BasicGame {
 	/** The current rotation of our test image */
 	private float rot;
 	/** True if the test should just exit first time round, used for testing shared contexts */
-	public static boolean exitMe = true;
+	public static boolean exitMe = false;
 	
 	/**
 	 * Create a new image rendering test

@@ -365,6 +365,7 @@ public class InternalTextureLoader {
         int textureID = createTextureID();        
         TextureImpl texture = new TextureImpl(resourceName, target, textureID); 
         // bind this texture 
+        GL.glEnable(target);
         GL.glBindTexture(target, textureID); 
  
         int width;
@@ -459,6 +460,7 @@ public class InternalTextureLoader {
     	int textureID = createTextureID();        
         TextureImpl texture = new TextureImpl(ref, target, textureID); 
         // bind this texture 
+        GL.glEnable(target);
         GL.glBindTexture(target, textureID); 
  
         int width = data.getWidth();
@@ -589,6 +591,7 @@ public class InternalTextureLoader {
         boolean flipped = false;
         
         // bind this texture 
+        GL.glEnable(target);
         GL.glBindTexture(target, textureID); 
     	
         int width;
@@ -700,7 +703,8 @@ public class InternalTextureLoader {
 	public int reload(TextureImpl texture, int srcPixelFormat, int componentCount,
 			int minFilter, int magFilter, ByteBuffer textureBuffer) {
     	int target = SGL.GL_TEXTURE_2D;
-        int textureID = createTextureID(); 
+        int textureID = createTextureID();
+        GL.glEnable(target);
         GL.glBindTexture(target, textureID); 
         
         GL.glTexParameteri(target, SGL.GL_TEXTURE_MIN_FILTER, minFilter); 

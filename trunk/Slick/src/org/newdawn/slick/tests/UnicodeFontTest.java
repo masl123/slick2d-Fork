@@ -37,7 +37,8 @@ public class UnicodeFontTest extends BasicGame {
 		container.setShowFPS(false);
 
 		// unicodeFont = new UnicodeFont(Font.decode("Arial Unicode MS"), 25, false, false);
-		unicodeFont = new UnicodeFont("c:/windows/fonts/arial.ttf", 48, false, false);
+		
+		unicodeFont = new UnicodeFont("testdata/Arial Black.ttf", 32, false, false);
 //		unicodeFont.setPaddingBottom(10);
 //		unicodeFont.setPaddingRight(10);
 //		unicodeFont.setPaddingAdvanceX(-10);
@@ -50,6 +51,10 @@ public class UnicodeFontTest extends BasicGame {
 		// font.addGlyphs(0, 255);
 		// font.addGlyphs("~!@#$%^&*()");
 
+		long l = System.currentTimeMillis();
+		unicodeFont.addAsciiGlyphs();
+		unicodeFont.loadGlyphs();
+		System.out.println(System.currentTimeMillis()-l);
 		container.getGraphics().setBackground(Color.darkGray);
 	}
 
@@ -68,9 +73,9 @@ public class UnicodeFontTest extends BasicGame {
 		int yOffset = unicodeFont.getYOffset(text);
 		g.drawRect(10, 33 + yOffset, unicodeFont.getWidth(text), unicodeFont.getHeight(text) - yOffset);
 
-		// font.drawString(10, 73, "\u6880\u6881\u6882 (...) \u6883\u6884\u6885\u6886\u6887 hi?");
-
-		unicodeFont.addGlyphs("~!@!#!#$%___--");
+//		 unicodeFont.drawString(10, 373, "\u6880\u6881\u6882 (...) \u6883\u6884\u6885\u6886\u6887 hi?");
+		unicodeFont.drawString(10, 373, "\uD802\uDC02\uD802\uDC03\uD802\uDC12a");
+//		unicodeFont.addGlyphs("~!@!#!#$%___--");
 		// Cypriot Syllabary glyphs (Everson Mono font): \uD802\uDC02\uD802\uDC03\uD802\uDC12 == 0x10802, 0x10803, s0x10812
 		// g.drawLine(0, container.getHeight() - 512, container.getWidth(), container.getHeight() - 512);
 	}
@@ -79,7 +84,7 @@ public class UnicodeFontTest extends BasicGame {
 	 * @see org.newdawn.slick.BasicGame#update(org.newdawn.slick.GameContainer, int)
 	 */
 	public void update (GameContainer container, int delta) throws SlickException {
-		unicodeFont.loadGlyphs(1);
+		
 	}
 
 	/**
@@ -92,7 +97,7 @@ public class UnicodeFontTest extends BasicGame {
 	public static void main(String[] args) throws SlickException, IOException {
 		Input.disableControllers();
 		AppGameContainer container = new AppGameContainer(new UnicodeFontTest());
-		container.setDisplayMode(512, 600, false);
+		container.setDisplayMode(800, 600, false);
 		container.setTargetFrameRate(20);
 		container.start();
 	}

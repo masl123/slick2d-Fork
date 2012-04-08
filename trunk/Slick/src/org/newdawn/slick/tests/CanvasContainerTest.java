@@ -96,7 +96,7 @@ public class CanvasContainerTest extends BasicGame {
 	 */
 	public static void main(String[] argv) {
 		try {
-			CanvasGameContainer container = new CanvasGameContainer(new CanvasContainerTest());
+			final CanvasGameContainer container = new CanvasGameContainer(new CanvasContainerTest());
 			
 			Frame frame = new Frame("Test");
 			frame.setLayout(new GridLayout(1,2));
@@ -105,6 +105,7 @@ public class CanvasContainerTest extends BasicGame {
 			
 			frame.addWindowListener(new WindowAdapter() {
 				public void windowClosing(WindowEvent e) {
+					container.getContainer().exit();
 					System.exit(0);
 				}
 			});

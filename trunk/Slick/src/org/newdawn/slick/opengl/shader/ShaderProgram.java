@@ -102,8 +102,7 @@ public class ShaderProgram {
 	private IntBuffer ibuf4;
 	
 	/**
-	 * A convenience method to load a ShaderProgram from two text files; this uses
-	 * the loadSource method.
+	 * A convenience method to load a ShaderProgram from two text files.
 	 * @param vertFile the location of the vertex shader source
 	 * @param fragFile the location of the frag shader source
 	 * @return the compiled and linked ShaderProgram
@@ -115,8 +114,7 @@ public class ShaderProgram {
 	}
 	
 	/**
-	 * Loads the given text file into a source code string, with each line separated
-	 * by new-line ('\n') characters.
+	 * Loads the given input stream into a source code string.
 	 * @param ref the location of the text file
 	 * @return the resulting source code String 
 	 * @throws SlickException if there was an issue reading the source

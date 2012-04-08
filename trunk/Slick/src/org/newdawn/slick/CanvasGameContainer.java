@@ -18,6 +18,7 @@ public class CanvasGameContainer extends Canvas {
 	protected Container container;
 	/** The game being held in this container */
 	protected Game game;
+	private boolean destroyed = false;
 
 	/**
 	 * Create a new panel
@@ -81,6 +82,12 @@ public class CanvasGameContainer extends Canvas {
 	 */
 	private void scheduleUpdate() {
 		if (!isVisible()) {
+			return;
+		}
+		
+		if (!container.running() && !destroyed) {
+			container.destroy();
+			destroyed = true;
 			return;
 		}
 		
