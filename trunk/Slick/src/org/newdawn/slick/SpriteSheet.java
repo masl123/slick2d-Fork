@@ -37,7 +37,7 @@ public class SpriteSheet extends Image {
 	public SpriteSheet(URL ref,int tw,int th) throws SlickException, IOException {
 		this(new Image(ref.openStream(), ref.toString(), false), tw, th);
 	}
-	
+
 	/**
 	 * Create a new sprite sheet based on a image location
 	 * 
@@ -47,11 +47,11 @@ public class SpriteSheet extends Image {
 	 */
 	public SpriteSheet(Image image,int tw,int th) {
 		super(image);
-		
+
 		this.target = image;
 		this.tw = tw;
 		this.th = th;
-		
+
 		// call init manually since constructing from an image will have previously initialised
 		// from incorrect values 
 		initImpl();
@@ -68,7 +68,7 @@ public class SpriteSheet extends Image {
 	 */
 	public SpriteSheet(Image image,int tw,int th,int spacing,int margin) {
 		super(image);
-		
+
 		this.target = image;
 		this.tw = tw;
 		this.th = th;
@@ -91,7 +91,7 @@ public class SpriteSheet extends Image {
 	public SpriteSheet(Image image,int tw,int th,int spacing) {
 		this(image,tw,th,spacing,0);
 	}
-	
+
 	/**
 	 * Create a new sprite sheet based on a image location
 	 * 
@@ -104,7 +104,7 @@ public class SpriteSheet extends Image {
 	public SpriteSheet(String ref,int tw,int th, int spacing) throws SlickException {
 		this(ref,tw,th,null,spacing);
 	}
-	
+
 	/**
 	 * Create a new sprite sheet based on a image location
 	 * 
@@ -129,7 +129,7 @@ public class SpriteSheet extends Image {
 	public SpriteSheet(String ref,int tw,int th, Color col) throws SlickException {
 		this(ref, tw, th, col, 0);
 	}
-	
+
 	/**
 	 * Create a new sprite sheet based on a image location
 	 * 
@@ -148,7 +148,7 @@ public class SpriteSheet extends Image {
 		this.th = th;
 		this.spacing = spacing;
 	}
-	
+
 	/**
 	 * Create a new sprite sheet based on a image location
 	 * 
@@ -165,7 +165,7 @@ public class SpriteSheet extends Image {
 		this.tw = tw;
 		this.th = th;
 	}
-	
+
 	/**
 	 * @see org.newdawn.slick.Image#initImpl()
 	 */
@@ -173,13 +173,13 @@ public class SpriteSheet extends Image {
 		if (subImages != null) {
 			return;
 		}
-		
+
 		int tilesAcross = ((getWidth()-(margin*2) - tw) / (tw + spacing)) + 1;
 		int tilesDown = ((getHeight()-(margin*2) - th) / (th + spacing)) + 1; 
 		if ((getHeight() - th) % (th+spacing) != 0) {
 			tilesDown++;
 		}
-		
+
 		subImages = new Image[tilesAcross][tilesDown];
 		for (int x=0;x<tilesAcross;x++) {
 			for (int y=0;y<tilesDown;y++) {
@@ -197,17 +197,17 @@ public class SpriteSheet extends Image {
 	 */
 	public Image getSubImage(int x, int y) {
 		init();
-		
+
 		if ((x < 0) || (x >= subImages.length)) {
 			throw new RuntimeException("SubImage out of sheet bounds: "+x+","+y);
 		}
 		if ((y < 0) || (y >= subImages[0].length)) {
 			throw new RuntimeException("SubImage out of sheet bounds: "+x+","+y);
 		}
-		
+
 		return subImages[x][y];
 	}
-	
+
 	/**
 	 * Create a new sub-image for a particular cell on the sprite sheet. This is generally
 	 * used internally, getSubImage should be used instead.
@@ -229,7 +229,7 @@ public class SpriteSheet extends Image {
 
 		return target.getSubImage(x*(tw+spacing) + margin, y*(th+spacing) + margin,tw,th); 
 	}
-	
+
 	/**
 	 * Get the number of sprites across the sheet
 	 * 
@@ -238,10 +238,10 @@ public class SpriteSheet extends Image {
 	public int getHorizontalCount() {
 		target.init();
 		initImpl();
-		
+
 		return subImages.length;
 	}
-	
+
 	/**
 	 * Get the number of sprites down the sheet
 	 * 
@@ -250,10 +250,10 @@ public class SpriteSheet extends Image {
 	public int getVerticalCount() {
 		target.init();
 		initImpl();
-		
+
 		return subImages[0].length;
 	}
-	
+
 	/**
 	 * Render a sprite when this sprite sheet is in use,
 	 * using the tile width and height given at SpriteSheet
@@ -350,7 +350,7 @@ public class SpriteSheet extends Image {
 		}
 		target.startUse();
 	}
-	
+
 	/**
 	 * @see org.newdawn.slick.Image#setTexture(org.newdawn.slick.opengl.Texture)
 	 */
@@ -361,4 +361,9 @@ public class SpriteSheet extends Image {
 		}
 		target.setTexture(texture);
 	}
+	
+	public void renderInUse(int x, int y, int sx, int sy, byte transform) {
+		subImages[sx][sy].drawEmbedded(x, y, tw, th, transform);
+	}
+
 }
