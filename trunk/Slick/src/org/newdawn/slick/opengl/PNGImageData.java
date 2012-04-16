@@ -3,6 +3,7 @@ package org.newdawn.slick.opengl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import org.lwjgl.BufferUtils;
 
@@ -75,6 +76,7 @@ public class PNGImageData implements LoadableImageData {
 	public ByteBuffer loadImage(InputStream fis, boolean flipped, boolean forceAlpha, int[] transparent) throws IOException {
 		if (transparent != null) {
 			forceAlpha = true;
+			System.out.println("Forcing: "+Arrays.toString(transparent));
 			//throw new IOException("Transparent color not support in custom PNG Decoder");
 		}
 		
@@ -124,8 +126,8 @@ public class PNGImageData implements LoadableImageData {
 				}
 			}
 		}
-		
-		if (!format.hasAlpha() && forceAlpha) {
+		boolean hasAlpha = format.hasAlpha();
+		if (!hasAlpha && forceAlpha) {
 		    final int orgComp = format.getColorComponents();
 		    final int newComp = orgComp + 1;
 			ByteBuffer temp = BufferUtils.createByteBuffer(texWidth * texHeight * newComp);
@@ -139,7 +141,7 @@ public class PNGImageData implements LoadableImageData {
 					for (int i = 0; i < orgComp; i++) {
 					    temp.put(scratch.get());
 					}
-					if ((x < getHeight()) && (y < getWidth())) {
+					if ((x < getWidth()) && (y < getHeight())) {
 						temp.put((byte) 255);
 					} else {
 						temp.put((byte) 0);
@@ -157,24 +159,41 @@ public class PNGImageData implements LoadableImageData {
 
         scratch.position(0);
 		
-		if (!format.hasAlpha() && transparent != null) {
+		if (!hasAlpha && transparent != null) {
+			//components will now be + 1
 		    final int components = format.getColorComponents();
+		    
 		    final int size = texWidth*texHeight*components;
 		    boolean match;
 		    
-		    for (int i = 0; i < size; i += components) {
-		        match = true;
-		        for (int c=0;c<components;c++) {
-		            if (toInt(scratch.get(i+c)) != transparent[c]) {
-                        match = false;
-                        break;
-                    }
-		        }
-      
-                if (match) {
-                    scratch.put(i+components, (byte) 0);
-                }
+		    for (int i=0; i<size; i+=components) {
+		    	match = true;
+		    	for (int c=0; c<components-1; c++) {
+		    		if (toInt(scratch.get(i+c)) != transparent[c]) {
+		    			match = false;
+		    			break;
+		    		}
+		    	}
+		    	if (match) {
+		    		scratch.put(i+components-1, (byte)0);
+		    	}
 		    }
+		    
+//		    for (int i = 0; i < size; i += components) {
+//		        match = true;
+//		        for (int c=0;c<components-1;c++) {
+//		        	byte iii = scratch.get(i+c);
+////		        	System.out.println("Checking "+iii+ " vs "+transparent[c]);
+//		            if (toInt(iii) != transparent[c]) {
+//                        match = false;
+//                        break;
+//                    }
+//		        }
+//      
+//                if (match) {
+//                    scratch.put(i+components, (byte) 0);
+//                }
+//		    }
 		}
 		
 		scratch.position(0);
