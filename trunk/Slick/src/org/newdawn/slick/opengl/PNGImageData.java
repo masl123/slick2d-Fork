@@ -76,7 +76,6 @@ public class PNGImageData implements LoadableImageData {
 	public ByteBuffer loadImage(InputStream fis, boolean flipped, boolean forceAlpha, int[] transparent) throws IOException {
 		if (transparent != null) {
 			forceAlpha = true;
-			System.out.println("Forcing: "+Arrays.toString(transparent));
 			//throw new IOException("Transparent color not support in custom PNG Decoder");
 		}
 		
@@ -160,42 +159,26 @@ public class PNGImageData implements LoadableImageData {
         scratch.position(0);
 		
 		if (!hasAlpha && transparent != null) {
-			//components will now be + 1
-		    final int components = format.getColorComponents();
-		    
-		    final int size = texWidth*texHeight*components;
-		    boolean match;
-		    
-		    for (int i=0; i<size; i+=components) {
-		    	match = true;
-		    	for (int c=0; c<components-1; c++) {
-		    		if (toInt(scratch.get(i+c)) != transparent[c]) {
-		    			match = false;
-		    			break;
-		    		}
-		    	}
-		    	if (match) {
-		    		scratch.put(i+components-1, (byte)0);
-		    	}
-		    }
-		    
-//		    for (int i = 0; i < size; i += components) {
-//		        match = true;
-//		        for (int c=0;c<components-1;c++) {
-//		        	byte iii = scratch.get(i+c);
-////		        	System.out.println("Checking "+iii+ " vs "+transparent[c]);
-//		            if (toInt(iii) != transparent[c]) {
-//                        match = false;
-//                        break;
-//                    }
-//		        }
-//      
-//                if (match) {
-//                    scratch.put(i+components, (byte) 0);
-//                }
-//		    }
+			// components will now be + 1
+			final int components = format.getColorComponents();
+
+			final int size = texWidth * texHeight * components;
+			boolean match;
+
+			for (int i = 0; i < size; i += components) {
+				match = true;
+				for (int c = 0; c < components - 1; c++) {
+					if (toInt(scratch.get(i + c)) != transparent[c]) {
+						match = false;
+						break;
+					}
+				}
+				if (match) {
+					scratch.put(i + components - 1, (byte) 0);
+				}
+			}
 		}
-		
+
 		scratch.position(0);
 		
 		return scratch;
