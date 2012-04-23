@@ -57,7 +57,7 @@ public class GUITest extends BasicGame implements ComponentListener {
 			app.setIcon("testdata/icon.tga");
 		}
 		
-		font = new AngelCodeFont("testdata/demo2.fnt","testdata/demo2_00.tga");
+		font = new AngelCodeFont("testdata/demo2.fnt","testdata/demo2.png");
 		field = new TextField(container, font, 150,20,500,35, new ComponentListener() {
 			public void componentActivated(AbstractComponent source) {
 				message = "Entered1: "+field.getText();

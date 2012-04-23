@@ -86,7 +86,7 @@ public class SoundStore {
 	}
 
 	/**
-	 * Disable use of the Sound Store
+	 * Disable use of the Sound Store (must be called before init)
 	 */
 	public void disable() {
 		inited = true;
