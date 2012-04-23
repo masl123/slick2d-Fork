@@ -40,7 +40,7 @@ public class TestState3 extends BasicGameState {
 	 * @see org.newdawn.slick.state.BasicGameState#init(org.newdawn.slick.GameContainer, org.newdawn.slick.state.StateBasedGame)
 	 */
 	public void init(GameContainer container, StateBasedGame game) throws SlickException {
-		font = new AngelCodeFont("testdata/demo2.fnt","testdata/demo2_00.tga");
+		font = new AngelCodeFont("testdata/demo2.fnt","testdata/demo2.png");
 		this.game = game;
 	}
 
