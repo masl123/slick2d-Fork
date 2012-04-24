@@ -110,6 +110,12 @@ public class AppGameContainer extends GameContainer {
 		if ((this.width == width) && (this.height == height) && (isFullscreen() == fullscreen)) {
 			return;
 		}
+		Color oldBG = null;
+		Graphics g = getGraphics();
+		if (g!=null) {
+			Graphics.setCurrent(g);
+			oldBG = g.getBackground();
+		}
 		
 		try {
 			targetDisplayMode = null;
@@ -156,6 +162,12 @@ public class AppGameContainer extends GameContainer {
 				initGL();
 				enterOrtho();
 			} 
+			
+			//initGL will reset the clear color... so let's reset it
+			if (oldBG!=null && g!=null) {
+				g.setBackground(oldBG);
+			}
+				
 			
 			if (targetDisplayMode.getBitsPerPixel() == 16) {
 				InternalTextureLoader.get().set16BitMode();

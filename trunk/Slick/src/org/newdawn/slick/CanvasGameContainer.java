@@ -179,7 +179,7 @@ public class CanvasGameContainer extends Canvas {
 			if ((width != CanvasGameContainer.this.getWidth()) ||
 			    (height != CanvasGameContainer.this.getHeight())) {
 				
-				try {
+				try { //is this really necessary? it causes a flicker
 					setDisplayMode(CanvasGameContainer.this.getWidth(), 
 								   CanvasGameContainer.this.getHeight(), false);
 				} catch (SlickException e) {
