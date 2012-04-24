@@ -115,12 +115,16 @@ public class CanvasContainerTest extends BasicGame {
 
 			final Game game = new CanvasContainerTest();
 			final CanvasGameContainer container = new CanvasGameContainer(game);
-			JFrame frame = new JFrame(game.getTitle());
+			final JFrame frame = new JFrame(game.getTitle());
 			// exit on close
 			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 
 			frame.addWindowListener(new WindowAdapter() {
 				public void windowClosing(WindowEvent we) {
-					// destroy GL/AL before closing
+					// to avoid ugly flicker when closing, we 
+					// can hide the window before destroying OpenGL
+					frame.setVisible(false);
+					
+					// destroys GL/AL context
 					container.getContainer().exit();
 				}
 			});
