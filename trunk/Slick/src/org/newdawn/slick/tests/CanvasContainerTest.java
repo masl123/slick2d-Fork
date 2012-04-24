@@ -68,8 +68,11 @@ public class CanvasContainerTest extends BasicGame {
 	 * @see org.newdawn.slick.BasicGame#render(org.newdawn.slick.GameContainer, org.newdawn.slick.Graphics)
 	 */
 	public void render(GameContainer container, Graphics g) {
+		// generally speaking, GAME_WIDTH should be used instead of
+		// container.getWidth(), since our game now expects a fixed resolution
+		image.draw(GAME_WIDTH-image.getWidth(),0);
+		
 		image.draw(0,0);
-		image.draw(500,0,200,100);
 		scaleMe.draw(500,100,200,100);
 		scaled.draw(400,500);
 		Image flipped = scaled.getFlippedCopy(true, false);
