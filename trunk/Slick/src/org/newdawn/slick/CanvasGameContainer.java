@@ -56,6 +56,7 @@ public class CanvasGameContainer extends Canvas {
 	 * @throws SlickException Indicates a failure during game execution
 	 */
 	public void start() throws SlickException {
+		destroyed = false;
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				try {
@@ -81,11 +82,11 @@ public class CanvasGameContainer extends Canvas {
 	 * Schedule an update on the EDT
 	 */
 	private void scheduleUpdate() {
-		if (!isVisible()) {
+		if (destroyed || !isVisible()) {
 			return;
 		}
 		
-		if (!container.running() && !destroyed) {
+		if (!container.running()) {
 			container.destroy();
 			destroyed = true;
 			return;
@@ -93,6 +94,8 @@ public class CanvasGameContainer extends Canvas {
 		
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
+				if (destroyed)
+					return;
 				try {
 					container.gameLoop();
 				} catch (SlickException e) {
@@ -103,6 +106,7 @@ public class CanvasGameContainer extends Canvas {
 			}
 		});
 	}
+	
 	/**
 	 * Dispose the container and any resources it holds
 	 */
@@ -156,6 +160,14 @@ public class CanvasGameContainer extends Canvas {
 		 */
 		protected boolean running() {
 			return super.running() && CanvasGameContainer.this.isDisplayable();
+		}
+		
+		public void exit() {
+			super.exit(); //superclass exit just changes a boolean
+			if (!destroyed) {
+				destroy();
+				destroyed = true;
+			}
 		}
 
 		/**
