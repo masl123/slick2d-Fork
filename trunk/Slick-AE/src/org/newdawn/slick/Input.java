@@ -369,6 +369,9 @@ public class Input implements InputProcessor {
 	/** The last y position for each point */
 	private int[] lasty = new int[100];
 	
+	/**a reference to the current gdx Input used for accelerometer information*/
+	private com.badlogic.gdx.Input gdxin;
+	
 	/**
 	 * Create a new input with the height of the screen
 	 * 
@@ -891,5 +894,63 @@ public class Input implements InputProcessor {
 	public boolean touchMoved(int arg0, int arg1) {
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	/** returns the libgdx input*/
+	public com.badlogic.gdx.Input getGdxin() {
+		return gdxin;
+	}
+	
+	/**uses the libgdx api to get accelerometer x axis data*/
+	public float getAccelerometerX(){
+		if (gdxin!=null){
+			return gdxin.getAccelerometerX();
+		}else{
+			return 0;
+		}
+	}
+
+	/**uses the libgdx api to get accelerometer y axis data*/
+	public float getAccelerometerY(){
+		if (gdxin!=null){
+			return gdxin.getAccelerometerY();
+		}else{
+			return 0;
+		}
+	}
+
+	/**uses the libgdx api to get accelerometer z axis data*/
+	public float getAccelerometerZ(){
+		if (gdxin!=null){
+			return gdxin.getAccelerometerZ();
+		}else{
+			return 0;
+		}
+	}
+	
+
+	/**The pitch is the angle of the device's orientation around the x-axis.*/
+	public float getPitch(){
+		if (gdxin!=null){
+			return gdxin.getPitch();
+		}else{
+			return 0;
+		}
+	}
+	
+	/**The roll is the angle of the device's orientation around the y-axis.*/
+	public float getRoll(){
+		if (gdxin!=null){
+			return gdxin.getRoll();
+		}else{
+			return 0;
+		}
+	}
+	
+	/**sets the com.badlogic.gdx.Input that this application uses
+	 * if it is on android.  This will allow Accelerometer data
+	 * to be accessed.*/
+	public void setGdxin(com.badlogic.gdx.Input gdxin) {
+		this.gdxin = gdxin;
 	}
 }

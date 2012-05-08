@@ -128,6 +128,7 @@ public abstract class GDXGameContainer extends GameContainer implements Applicat
 			Log.error("Creating application: "+app);
 			if (app != null) {
 				app.getInput().setInputProcessor(getInput());
+				getInput().setGdxin(app.getInput());
 			}
 			enterOrtho();
 			
