@@ -117,7 +117,7 @@ public class Image implements Renderable {
 	protected float textureOffsetX;
 	/** The y texture offset to use to find our image */
 	protected float textureOffsetY;
-	/** Angle to rotate the image to. */
+	/** Angle to rotate the image to, in degrees. */
 	protected float angle;
 	/** The alpha to draw the image at */
 	protected float alpha = 1.0f;
@@ -537,10 +537,11 @@ public class Image implements Renderable {
 	}
 
 	/**
-	 * Reinitialise internal data.
+	 * Reinitialise internal data and flushes the cached pixel data.
 	 */
 	protected void reinit() {
 		inited = false;
+		flushPixelData();
 		init();
 	}
 
@@ -1515,7 +1516,17 @@ public class Image implements Renderable {
 	}
 
 	/**
-	 * Get the colour of a pixel at a specified location in this image
+	 * Get the colour of a pixel at a specified location in this image.
+	 * 
+	 * The first time this method is called, the pixel data will be
+	 * copied from the backing texture and cached. Changing the image
+	 * afterwards with getGraphics().flush() will reset the pixel data,
+	 * meaning the next time you call this the texture will be re-copied
+	 * with new data. You can manually reset the pixel data with flushPixelData().
+	 * 
+	 * This method accounts for sub-images and flipped copies, but however
+	 * does not account for scaled images (since the backing texture is not
+	 * actually re-sampled during a scale).
 	 * 
 	 * @param x The x coordinate of the pixel
 	 * @param y The y coordinate of the pixel
@@ -1528,19 +1539,17 @@ public class Image implements Renderable {
 
 		int xo = (int) (textureOffsetX * texture.getTextureWidth());
 		int yo = (int) (textureOffsetY * texture.getTextureHeight());
-
 		if (textureWidth < 0) {
-			x = xo - x;
+			x = xo - x - 1;
 		} else {
 			x = xo + x;
 		} 
 
 		if (textureHeight < 0) {
-			y = yo - y;
+			y = yo - y - 1;
 		} else {
 			y = yo + y;
 		}
-
 		int offset = x + (y * texture.getTextureWidth());
 		offset *= texture.hasAlpha() ? 4 : 3;
 
@@ -1606,7 +1615,7 @@ public class Image implements Renderable {
 		boolean rotate = (transform & 1) > 0;
 		boolean flipY  = ((transform & 2) > 0) ^ rotate;                
 		boolean flipX  = ((transform & 4) > 0) ^ rotate;
-
+		
 		if (flipX) {
 			x+=width;
 			width*=-1;;
