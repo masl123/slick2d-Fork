@@ -103,13 +103,25 @@ public class FBOGraphics extends Graphics {
 			completeCheck();
 			unbind();
 			if (image.getTexture()!=null) {
-				// Clear our destination area before using it
-				clear();
-				flush();
+				//clear();
+				//flush();
 				
 				// keep hold of the original content
+				// ( this will end up calling enable() via Graphics.setCurrent )
 				drawImage(image, 0, 0);
+				
+					//OPTION A: flush() FBO after getGraphics
+						//problem -- users need to call Graphics.setCurrent(g)
+							//otherwise image.drawXX or font.drawXX won't work
+				
+					//OPTION B: (old system) Leave it bound
+						//problem -- requires a flush() operation after use,
+							//otherwise things like TWL won't work
+				
 			}
+			//We'll use the "old system" (Option B) until we fully refactor FBOs
+			Graphics.setCurrent(this);
+			
 			image.setTexture(tex);
 			
 		} catch (Exception e) {

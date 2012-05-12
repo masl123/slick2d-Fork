@@ -65,6 +65,7 @@ public class PBufferUniqueGraphics extends Graphics {
 									  tex.getTextureWidth(), 
 									  tex.getTextureHeight(), 0);
 			}
+			Graphics.setCurrent(this); //this means you need to call flush() after getGraphics
 			image.setTexture(tex);
 			
 			Display.makeCurrent();
