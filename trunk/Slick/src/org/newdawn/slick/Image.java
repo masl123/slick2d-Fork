@@ -625,7 +625,7 @@ public class Image implements Renderable {
 	 * @param y the y to render the image at
 	 * @param width the new width to render the image
 	 * @param height the new height to render the image
-	 * @param rotation the rotation to render the image, using getCenterOfRotationX/Y
+	 * @param rotation the rotation to render the image in degrees, using getCenterOfRotationX/Y
 	 */
 	public void drawEmbedded(float x, float y, float width, float height, float rotation) {
 		if (rotation==0) {
@@ -803,7 +803,8 @@ public class Image implements Renderable {
 	}
 
 	/**
-	 * Get the x offset in texels into the source texture
+	 * Get the x offset in texels into the source texture (normalized
+	 * value between 0.0 and 1.0).
 	 * 
 	 * @return The x offset 
 	 */
@@ -814,7 +815,8 @@ public class Image implements Renderable {
 	}
 
 	/**
-	 * Get the y offset in texels into the source texture
+	 * Get the y offset in texels into the source texture (normalized
+	 * value between 0.0 and 1.0).
 	 * 
 	 * @return The y offset 
 	 */
@@ -825,7 +827,8 @@ public class Image implements Renderable {
 	}
 
 	/**
-	 * Get the width in texels into the source texture
+	 * Get the width in texels into the source texture (normalized
+	 * value between 0.0 and 1.0, i.e. Texture.getWidth).
 	 * 
 	 * @return The width
 	 */
@@ -836,7 +839,8 @@ public class Image implements Renderable {
 	}
 
 	/**
-	 * Get the height in texels into the source texture
+	 * Get the height in texels into the source texture (normalized
+	 * value between 0.0 and 1.0, i.e. Texture.getHeight)
 	 * 
 	 * @return The height
 	 */
@@ -1109,7 +1113,7 @@ public class Image implements Renderable {
 	 * Set the angle to rotate this image to.  The angle will be normalized to 
 	 * be 0 <= angle < 360.  The image will be rotated around its center.
 	 * 
-	 * @param angle The angle to be set
+	 * @param angle The angle to be set (in degrees)
 	 */
 	public void setRotation(float angle) { 
 		this.angle = angle % 360.0f; 
@@ -1119,7 +1123,7 @@ public class Image implements Renderable {
 	 * Get the current angle of rotation for this image.
 	 * The image will be rotated around its center.
 	 * 
-	 * @return The current angle.
+	 * @return The current angle (in degrees)
 	 */
 	public float getRotation() { 
 		return angle; 
@@ -1147,7 +1151,7 @@ public class Image implements Renderable {
 	 * Add the angle provided to the current rotation.  The angle will be normalized to 
 	 * be 0 <= angle < 360.  The image will be rotated around its center.
 	 *  
-	 * @param angle The angle to add.
+	 * @param angle The angle to add (in degrees)
 	 */
 	public void rotate(float angle) { 
 		this.angle += angle;
@@ -1289,7 +1293,7 @@ public class Image implements Renderable {
 	}
 
 	/**
-	 * Get the width of this image
+	 * Get the width of this image (e.g. Texture.getImageWidth)
 	 * 
 	 * @return The width of this image
 	 */
@@ -1299,7 +1303,7 @@ public class Image implements Renderable {
 	}
 
 	/**
-	 * Get the height of this image
+	 * Get the height of this image (e.g. Texture.getImageHeight)
 	 * 
 	 * @return The height of this image
 	 */

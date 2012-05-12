@@ -743,6 +743,7 @@ public abstract class Shape implements Serializable {
      * @return The width of the shape
      */
     public float getWidth() {
+    	checkPoints();
     	return maxX - minX;
     }
 
@@ -753,6 +754,7 @@ public abstract class Shape implements Serializable {
      * @return The height of the shape
      */
     public float getHeight() {
+    	checkPoints();
     	return maxY - minY;
     }
 }
