@@ -1484,7 +1484,6 @@ public class Graphics {
 	 * @param yoff the y destination on the target at which to place the copied data
 	 * @param width the width of the data to copy from the screen
 	 * @param height the height of the data to copy from the screen
-	 * @author davedes
 	 */
 	public void copyArea(Image target, int x, int y, int xoff, int yoff, int width, int height) {
 		predraw();
