@@ -52,6 +52,10 @@ public class AppGameContainer extends GameContainer {
 	protected boolean updateOnlyOnVisible = true;
 	/** Alpha background supported */
 	protected boolean alphaSupport = false;
+	/** Whether the native display is resizable. */
+	protected boolean resizable = false;
+	/** A flag that indicates whether the display was resized since last frame. */
+	protected boolean wasResized = false;
 	
 	/**
 	 * Create a new container wrapping a game
@@ -97,6 +101,32 @@ public class AppGameContainer extends GameContainer {
 	public void setTitle(String title) {
 		Display.setTitle(title);
 	}
+	
+	/**
+	 * Whether the user can resize the display. 
+	 * @param resizable true if the user can resize the display
+	 */
+	public void setResizable(boolean resizable) {
+		Display.setResizable(resizable);
+	}
+	
+	/**
+	 * Returns true if this display can be resized. 
+	 * @return whether the display is resizable
+	 */
+	public boolean isResizable() {
+		return Display.isResizable();
+	}
+	
+//	TODO: implement with a ContainerListener interface; 
+	// i.e. containerResized, containerActivated, containerDeactivated
+//	/**
+//	 * Returns true if this display was resized since last loop.
+//	 * @return
+//	 */
+//	public boolean wasResized() {
+//		return Display.wasResized();
+//	}
 	
 	/**
 	 * Set the display mode to be used 
@@ -157,10 +187,11 @@ public class AppGameContainer extends GameContainer {
 
 			Display.setDisplayMode(targetDisplayMode);
 			Display.setFullscreen(fullscreen);
-
+			
+			
 			if (Display.isCreated()) {
 				initGL();
-				enterOrtho();
+				onResize();
 			} 
 			
 			//initGL will reset the clear color... so let's reset it
@@ -392,7 +423,7 @@ public class AppGameContainer extends GameContainer {
 		
 		initSystem();
 		enterOrtho();
-
+		
 		try {
 			getInput().initControllers();
 		} catch (SlickException e) {
@@ -419,6 +450,11 @@ public class AppGameContainer extends GameContainer {
 		if (!Display.isVisible() && updateOnlyOnVisible) {
 			try { Thread.sleep(100); } catch (Exception e) {}
 		} else {
+			if (Display.wasResized()) {
+				width = Display.getWidth();
+				height = Display.getHeight();
+				onResize();
+			}
 			try {
 				updateAndRender(delta);
 			} catch (SlickException e) {

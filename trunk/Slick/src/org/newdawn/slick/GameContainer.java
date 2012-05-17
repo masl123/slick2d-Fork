@@ -722,6 +722,22 @@ public abstract class GameContainer implements GUIContext {
 		return true;
 	}
 	
+	/** 
+	 * Called when the GL context is resized. This does not resize 
+	 * the GL view; instead, it simply re-enters orthographic projection. 
+	 */
+	protected void onResize() {
+		if (getInput() != null) {
+			getInput().init(getHeight());
+		}
+		
+		if (getGraphics() != null) {
+			getGraphics().setDimensions(getWidth(), getHeight());
+		}
+		
+		enterOrtho();
+	}
+	
 	/**
 	 * Initialise the GL context
 	 */
