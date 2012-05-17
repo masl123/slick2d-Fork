@@ -1,4 +1,4 @@
-package org.newdawn.slick.tests;
+package org.newdawn.slick.tests.shader;
 
 import org.newdawn.slick.AppGameContainer;
 import org.newdawn.slick.BasicGame;
@@ -81,7 +81,7 @@ public class ShaderTestAdvanced extends BasicGame {
 				alpha = 0.75f;
 				blurVert.setUniform1f("alpha", alpha);
 				
-				ShaderProgram.unbind();
+				ShaderProgram.unbindAll();
 			} catch (SlickException e) {
 				log = e.getMessage();
 				Log.error(log);
@@ -136,7 +136,7 @@ public class ShaderTestAdvanced extends BasicGame {
 				blurVert.setUniform1f("alpha", alpha);
 				screenGraphics.drawImage(postImage, 0, 0);
 			}
-			ShaderProgram.unbind();
+			ShaderProgram.unbindAll();
 		}
 		
 		
