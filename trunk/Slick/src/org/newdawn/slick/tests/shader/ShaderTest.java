@@ -1,4 +1,4 @@
-package org.newdawn.slick.tests;
+package org.newdawn.slick.tests.shader;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
@@ -77,7 +77,7 @@ public class ShaderTest extends BasicGame {
 			//set up our uniforms...
 			program.bind();
 			program.setUniform1i("tex0", 0); //texture 0
-			ShaderProgram.unbind();
+			program.unbind();
 		} catch (Exception e) {
 			log = e.getMessage();
 			Log.error(log);
@@ -95,7 +95,7 @@ public class ShaderTest extends BasicGame {
 		
 		//unbind the shader so that usual stuff renders OK
 		if (shaderWorks && useShader)
-			ShaderProgram.unbind();
+			program.unbind();
 		
 		if (shaderWorks)
 			g.drawString("Space to toggle shader\nPress R to reload shaders", 10, 25);

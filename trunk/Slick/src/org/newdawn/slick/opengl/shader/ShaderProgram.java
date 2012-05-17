@@ -77,7 +77,7 @@ public class ShaderProgram {
 	/**
 	 * Disables shaders.
 	 */
-	public static void unbind() {
+	public static void unbindAll() {
 		ARBShaderObjects.glUseProgramObjectARB(0);
 	}
 	
@@ -303,6 +303,15 @@ public class ShaderProgram {
 			throw new IllegalStateException("trying to enable a program that is not valid");
 		ARBShaderObjects.glUseProgramObjectARB(program);
 	}
+
+	/**
+	 * Unbinds all shaders; this is the equivalent of ShaderProgram.unbindAll(), and only included
+	 * for consistency with bind() and the rest of the API (i.e. startUse/endUse). Users do not need to unbind
+	 * one shader before binding a new one.
+	 */
+	public void unbind() {
+		ShaderProgram.unbindAll();
+	}
 	
 	/**
 	 * Disables shaders (unbind), then detaches and releases the shaders associated with this program. 
@@ -312,7 +321,7 @@ public class ShaderProgram {
 	 * Shaders shouldn't be used after being released.
 	 */
 	public void releaseShaders() {
-		ShaderProgram.unbind();
+		unbind();
 		if (vert!=0) {
 			ARBShaderObjects.glDetachObjectARB(getID(), vert);
 			ARBShaderObjects.glDeleteObjectARB(vert);
@@ -333,7 +342,7 @@ public class ShaderProgram {
 	 */
 	public void release() {
 		if (program!=0) {
-			ShaderProgram.unbind();
+			unbind();
 			releaseShaders();
 			ARBShaderObjects.glDeleteObjectARB(program);
 			program = 0;
