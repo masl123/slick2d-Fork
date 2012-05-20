@@ -66,7 +66,7 @@ public class BMFontUtil {
 		out.println("info face=\"" + font.getFontName() + "\" size=" + font.getSize() + " bold=" + (font.isBold() ? 1 : 0)
 			+ " italic=" + (font.isItalic() ? 1 : 0)
 			+ " charset=\"\" unicode=0 stretchH=100 smooth=1 aa="+(antiAliasing?1:0)+" padding=0,0,0,0 spacing=0,0");
-		out.println("common lineHeight=" + lineHeight + " base=26"+" scaleW=" + pageWidth + " scaleH=" + pageHeight
+		out.println("common lineHeight=" + lineHeight + " base="+unicodeFont.getAscent()+" scaleW=" + pageWidth + " scaleH=" + pageHeight
 			+ " pages=" + unicodeFont.getGlyphPages().size() + " packed=0 ascent="
 				+unicodeFont.getAscent()+" descent="+unicodeFont.getDescent()+" leading="+unicodeFont.getLeading());
 

@@ -51,7 +51,7 @@ public class FontTest extends BasicGame {
 	public void render(GameContainer container, Graphics g) {
 		if (g.getFont() instanceof AngelCodeFont) {
 			AngelCodeFont f = (AngelCodeFont)g.getFont();
-			String t = "testing baseline";
+			String t = "testing } baseline";
 			float w = f.getWidth(t);
 			g.drawString(t, 400, 500);
 			g.setColor(Color.red);
@@ -132,7 +132,7 @@ public class FontTest extends BasicGame {
 	 */
 	public void update(GameContainer container, int delta) throws SlickException {
 		width += delta * 0.1f * widthMult;
-		if (width > 250 || width < 0)
+		if (width > 270 || width < 0)
 			widthMult = widthMult==1 ? -1 : 1;
 	}
 	
