@@ -212,8 +212,8 @@ public class AngelCodeFont implements Font {
 					fntFile));
 			String info = in.readLine();
 			String common = in.readLine();
-			//baseline = parseMetric(common, "base="); //not used apparently ?
-			ascent = parseMetric(common, "ascent=");
+			ascent = parseMetric(common, "base="); //not used apparently ?
+			//ascent = parseMetric(common, "ascent=");
 			descent = parseMetric(common, "descent=");
 			leading = parseMetric(common, "leading=");
 			
