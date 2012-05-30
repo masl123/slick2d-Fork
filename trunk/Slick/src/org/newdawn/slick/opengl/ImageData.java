@@ -26,6 +26,9 @@ public interface ImageData {
 
         /** he format for RGB images with alpha. */
         RGBA(4, 32, true, SGL.GL_RGBA),
+        
+        /** The format for alpha-only images. */
+        ALPHA(1, 8, true, SGL.GL_ALPHA),
 
         /** he format for grayscale images (no alpha). */
         GRAY(1, 8, false, SGL.GL_LUMINANCE),
