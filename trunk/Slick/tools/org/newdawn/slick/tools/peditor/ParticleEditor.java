@@ -342,7 +342,7 @@ public class ParticleEditor extends JFrame {
 		
 		try {
 			container.start();
-		} catch (SlickException e1) {
+		} catch (Exception e1) {
 			Log.error(e1);
 		}
 	}
