@@ -398,7 +398,7 @@ public class InternalTextureLoader {
         texture.setWidth(width);
         texture.setHeight(height);
         texture.setImageFormat(format);
-
+        
         if (holdTextureData) {
         	texture.setTextureData(srcPixelFormat, componentCount, minFilter, magFilter, textureBuffer);
         }
@@ -432,15 +432,19 @@ public class InternalTextureLoader {
      * If the internalFormat is not null, then that will override the default pixel
      * format described by this InternalTextureLoader (either GL_RGBA16 or GL_RGBA8
      * depending on the is16BitMode() value). This parameter can be independent
-     * of the format of the file -- OpenGL will convert the file's format (e.g. BGRA)
-     * to the given internalFormat (e.g. RGB).
+     * of the format of ImageData -- OpenGL will convert the ImageData format (e.g. BGRA)
+     * to the given internalFormat (e.g. RGB). Note that internalFormat is more limited
+     * than the ImageData's format; i.e. BGRA as an internal storage format is only 
+     * supported if GL_ext_bgra is present.
      * 
      * After calling this, the texture will be bound and the target (e.g. GL_TEXTURE_2D)
      * will be enabled. If you are using a higher priority target, such as 3D textures,
      * you should disable that afterwards to ensure compatibility with Slick.
      * 
-     * @param data the image data holding width, height, format
-     * @param buffer the actual data to send to GL
+     * The ByteBuffer data is assumed to match getTexWidth/getTexHeight in ImageData.
+     * 
+     * @param data the image data holding width, height, format (ImageData byte buffer is ignored)
+     * @param buffer the actual data to send to GL 
      * @param ref The name to give the TextureImpl
      * @param target The texture target we're loading this texture into
      * @param minFilter The scaling down filter
@@ -465,8 +469,8 @@ public class InternalTextureLoader {
  
         int width = data.getWidth();
         int height = data.getHeight();
-        int texWidth = width;
-        int texHeight = height;
+        int texWidth = data.getTexWidth();
+        int texHeight = data.getTexHeight();
         
         boolean usePOT = !isNPOTSupported() || isForcePOT();
         if (usePOT) {
@@ -511,26 +515,27 @@ public class InternalTextureLoader {
         	genMipmaps = false;
         }
         
-        //if we only need one call to glTexImage2D
-        if (texWidth==width && texHeight==height) {
-        	GL.glTexImage2D(target, 0, dstFmt, texWidth, texHeight, 
-        			0, srcFmt, SGL.GL_UNSIGNED_BYTE, buffer);
-        } else {
-        	//Slick2D decodes NPOT image data into padded byte buffers.
-        	//Once we make the shift to decoding NPOT image data, then we can clean this up
-        	GL.glTexImage2D(target, 0, dstFmt, texWidth, texHeight, 
-        			0, srcFmt, SGL.GL_UNSIGNED_BYTE, buffer);
-        	
-        	//first create the full texture
-        	//we could also use a null ByteBuffer but this seems to be buggy with certain machines
-//        	ByteBuffer empty = BufferUtils.createByteBuffer(texWidth * texHeight * 4);
-//        	GL.glTexImage2D(target, 0, dstFmt, texWidth, texHeight,
-//        			0, SGL.GL_RGBA, SGL.GL_UNSIGNED_BYTE, empty);
-//        	//then upload the sub image
-//        	GL.glTexSubImage2D(target, 0, 0, 0, width, height, srcFmt, SGL.GL_UNSIGNED_BYTE, buffer);
-        }
+        //For now, just assume Slick has decoded image data into POT
+        GL.glTexImage2D(target, 0, dstFmt, texWidth, texHeight, 0, srcFmt, SGL.GL_UNSIGNED_BYTE, buffer);
         
-        // TODO: abstract mipmap generation in SGL
+//        if (texWidth==width && texHeight==height) {
+//        	GL.glTexImage2D(target, 0, dstFmt, texWidth, texHeight, 
+//        			0, srcFmt, SGL.GL_UNSIGNED_BYTE, buffer);
+//        } else {
+//        	//Slick2D decodes NPOT image data into padded byte buffers.
+//        	//Once we make the shift to decoding NPOT image data, then we can clean this up
+//        	GL.glTexImage2D(target, 0, dstFmt, texWidth, texHeight, 
+//        			0, srcFmt, SGL.GL_UNSIGNED_BYTE, buffer);
+//        	
+//        	//first create the full texture
+//        	//we could also use a null ByteBuffer but this seems to be buggy with certain machines
+////        	ByteBuffer empty = BufferUtils.createByteBuffer(texWidth * texHeight * 4);
+////        	GL.glTexImage2D(target, 0, dstFmt, texWidth, texHeight,
+////        			0, SGL.GL_RGBA, SGL.GL_UNSIGNED_BYTE, empty);
+////        	//then upload the sub image
+////        	GL.glTexSubImage2D(target, 0, 0, 0, width, height, srcFmt, SGL.GL_UNSIGNED_BYTE, buffer);
+//        }
+        
         if (genMipmaps) {
         	GL11.glEnable(target); //fixes ATI bug
         	if (cx.OpenGL30)
@@ -568,7 +573,7 @@ public class InternalTextureLoader {
     }
     
     /**
-     * Get a texture from a image file
+     * Get a texture from an image file. 
      * 
      * @param dataSource The image data to generate the texture from
      * @param filter The filter to use when scaling the texture

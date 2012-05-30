@@ -85,7 +85,7 @@ public class PNGImageData implements LoadableImageData {
 		height = decoder.getHeight();
 		texWidth = get2Fold(width);
 		texHeight = get2Fold(height);
-		
+		//get the decoder's format
 		final PNGDecoder.Format decoderFormat = decoder.decideTextureFormat(PNGDecoder.Format.LUMINANCE);
 		if (decoderFormat == PNGDecoder.Format.RGB) {
 		    format = Format.RGB;
@@ -126,7 +126,7 @@ public class PNGImageData implements LoadableImageData {
 			}
 		}
 		boolean hasAlpha = format.hasAlpha();
-		if (!hasAlpha && forceAlpha) {
+		if (forceAlpha) {
 		    final int orgComp = format.getColorComponents();
 		    final int newComp = orgComp + 1;
 			ByteBuffer temp = BufferUtils.createByteBuffer(texWidth * texHeight * newComp);
