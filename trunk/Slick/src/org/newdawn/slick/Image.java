@@ -1253,12 +1253,12 @@ public class Image implements Renderable {
 	 * 
 	 * @param x1 The top left corner x coordinate
 	 * @param y1 The top left corner y coordinate
-	 * @param x2 The top right corner x coordinate
-	 * @param y2 The top right corner y coordinate
+	 * @param x2 The bottom left corner x coordinate
+	 * @param y2 The bottom left corner y coordinate
 	 * @param x3 The bottom right corner x coordinate
 	 * @param y3 The bottom right corner y coordinate
-	 * @param x4 The bottom left corner x coordinate
-	 * @param y4 The bottom left corner y coordinate
+	 * @param x4 The top right corner x coordinate
+	 * @param y4 The top right corner y coordinate
 	 */
 	public void drawWarped(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4) {
 		Color.white.bind();
