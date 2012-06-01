@@ -6,6 +6,7 @@ import java.util.Properties;
 
 import org.newdawn.slick.Color;
 import org.newdawn.slick.SlickException;
+import org.newdawn.slick.util.Log;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -36,7 +37,7 @@ public class ObjectGroup {
 	/** The visibility of this layer */
 	public boolean visible = true;
 	/** The color of this layer. NOTE: Slick does not render objects on default */
-	public Color color;
+	public Color color = new Color(Color.white);
 
 	/**
 	 * Create a new group based on the XML definition
@@ -58,26 +59,32 @@ public class ObjectGroup {
 		}
 		name = element.getAttribute("name");
 		String widthS = element.getAttribute("width");
-		if (widthS != null) {
+		if (widthS != null && widthS.length()!=0) {
 			width = Integer.parseInt(widthS);
 		}
 		String heightS = element.getAttribute("height");
-		if (widthS != null) {
+		if (heightS != null && heightS.length()!=0) {
 			height = Integer.parseInt(heightS);
 		}
+		if (width==0||height==0)
+			Log.warn("ObjectGroup "+name+" has zero size (width or height equal to 0)");
 
 		objects = new ArrayList<GroupObject>();
 		String opacityS = element.getAttribute("opacity");
-		if (!opacityS.equals("")) {
+		if (opacityS!=null && opacityS.length()!=0) {
 			opacity = Float.parseFloat(opacityS);
 		}
-		if (element.getAttribute("visible").equals("0")) {
+		if ("0".equals(element.getAttribute("visible"))) {
 			visible = false;
 		}
-
+		//will default to Color.white if attribute is not found / can't be parsed
 		String colorS = element.getAttribute("color");
-		if (colorS != null) {
-			color = Color.decode(colorS);
+		if (colorS != null && colorS.length()!=0) {
+			try {
+				color = Color.decode(colorS);
+			} catch (NumberFormatException e) {
+				Log.warn("color attribute in element "+name+" could not be parsed; reverting to white");
+			}
 		}
 
 		// now read the layer properties
