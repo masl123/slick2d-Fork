@@ -596,7 +596,7 @@ public abstract class GameContainer implements GUIContext {
 	 */
 	protected void updateFPS() {
 		if (getTime() - lastFPS > 1000) {
-			lastFPS = getTime();
+			lastFPS += 1000;
 			recordedFPS = fps;
 			fps = 0;
 		}
@@ -774,6 +774,8 @@ public abstract class GameContainer implements GUIContext {
 		
 		graphics = new Graphics(width, height);
 		defaultFont = graphics.getFont();
+
+        lastFPS = getTime();
 	}
 	
 	/**
