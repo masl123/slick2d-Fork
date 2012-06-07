@@ -62,5 +62,9 @@ public class NullAudio implements Audio {
 	 */
 	public void stop() {
 	}
+	
+	public void release() {
+		
+	}
 
 }

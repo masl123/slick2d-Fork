@@ -85,7 +85,7 @@ public class SoundTest extends BasicGame {
 		g.drawString("The OGG loop is now streaming from the file, woot.",100,60);
 		g.drawString("Press space for sound effect (OGG)",100,100);
 		g.drawString("Press P to pause/resume music (XM)",100,130);
-		g.drawString("Press E to pause/resume engine sound (WAV)",100,190);
+		g.drawString("Press 1-3 to play engine sound (WAV)",100,190);
 		g.drawString("Press enter for charlie (WAV)",100,160);
 		g.drawString("Press C to change music",100,210);
 		g.drawString("Press B to burp (AIF)",100,240);
@@ -130,7 +130,11 @@ public class SoundTest extends BasicGame {
 			if (music.playing()) {
 				music.pause();
 			} else {
-				music.resume();
+				if (music.paused()) {
+					music.resume();
+				} else {
+					music.loop();
+				}
 			}
 		}
 		if (key == Input.KEY_C) {
