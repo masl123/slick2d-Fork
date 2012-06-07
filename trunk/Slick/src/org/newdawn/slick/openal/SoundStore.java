@@ -440,6 +440,16 @@ public class SoundStore {
 	}
 	
 	/**
+	 * Check if a particle source is paused 
+	 * @param index the index of the source
+	 * @return true if the source is playing
+	 */
+	boolean isPaused(int index) {
+		int state = AL10.alGetSourcei(sources.get(index), AL10.AL_SOURCE_STATE);
+		return (state == AL10.AL_PAUSED);
+	}
+	
+	/**
 	 * Find a free sound source
 	 * 
 	 * @return The index of the free sound source
