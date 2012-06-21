@@ -94,11 +94,7 @@ public class AppletGameContainer extends Applet {
             }
             catch (Exception e) {
                e.printStackTrace();
-               if (Display.isCreated()) {
-                  Display.destroy();
-               }
-               if (AL.isCreated())
-            	   AL.destroy();
+               AppletGameContainer.this.destroy();
                displayParent.setVisible(false);//removeAll();
                add(new ConsolePanel(e));
                validate();
@@ -524,9 +520,7 @@ public class AppletGameContainer extends Applet {
             Display.update();
          }
 
-         Display.destroy();
-         if (AL.isCreated())
-        	 AL.destroy();
+         destroy();
       }
    }
    
