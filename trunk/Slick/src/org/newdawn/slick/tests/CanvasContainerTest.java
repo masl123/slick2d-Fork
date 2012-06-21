@@ -3,6 +3,8 @@ package org.newdawn.slick.tests;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
@@ -102,6 +104,8 @@ public class CanvasContainerTest extends BasicGame {
 			rot -= 360;
 		}
 	}
+	
+	
 
 	/**
 	 * Entry point to our test
@@ -114,10 +118,11 @@ public class CanvasContainerTest extends BasicGame {
 			// resolution, regardless of JFrame size!
 
 			final Game game = new CanvasContainerTest();
-			final CanvasGameContainer container = new CanvasGameContainer(game);
+			final CanvasGameContainer canvasPanel = new CanvasGameContainer(game);
 			final JFrame frame = new JFrame(game.getTitle());
+			
 			// exit on close
-			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 
+			frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); 
 			frame.addWindowListener(new WindowAdapter() {
 				public void windowClosing(WindowEvent we) {
 					// to avoid ugly flicker when closing, we 
@@ -125,7 +130,39 @@ public class CanvasContainerTest extends BasicGame {
 					frame.setVisible(false);
 					
 					// destroys GL/AL context
-					container.getContainer().exit();
+					canvasPanel.getContainer().exit();
+				}
+			});
+			canvasPanel.addKeyListener(new KeyListener() {
+				
+				@Override
+				public void keyTyped(KeyEvent arg0) {
+					// TODO Auto-generated method stub
+					
+				}
+				
+				@Override
+				public void keyReleased(KeyEvent arg0) {
+					// TODO Auto-generated method stub
+					
+				}
+				
+				@Override
+				public void keyPressed(KeyEvent e) {
+					if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+						GameContainer container = canvasPanel.getContainer();
+						if (container.running())
+							container.exit();
+						else {
+							try {
+								canvasPanel.start();
+								System.out.println("starting");
+							} catch (SlickException e1) {
+								container.exit();
+								e1.printStackTrace();
+							}
+						}
+					}
 				}
 			});
 
@@ -134,15 +171,15 @@ public class CanvasContainerTest extends BasicGame {
 
 			// the size of our game
 			Dimension size = new Dimension(GAME_WIDTH, GAME_HEIGHT);
-			container.setPreferredSize(size);
-			container.setMinimumSize(size);
-			container.setMaximumSize(size);
+			canvasPanel.setPreferredSize(size);
+			canvasPanel.setMinimumSize(size);
+			canvasPanel.setMaximumSize(size);
 
 			// layout our game canvas so that it's centred
 			GridBagConstraints c = new GridBagConstraints();
 			c.fill = GridBagConstraints.CENTER;
 			frame.getContentPane().setLayout(new GridBagLayout());
-			frame.getContentPane().add(container, c);
+			frame.getContentPane().add(canvasPanel, c);
 			
 			frame.pack();
 			frame.setResizable(true);
@@ -151,9 +188,9 @@ public class CanvasContainerTest extends BasicGame {
 			
 			// request focus so that it begins rendering immediately
 			// alternatively we could use GameContainer.setAlwaysRender(true)
-			container.requestFocusInWindow();
+			canvasPanel.requestFocusInWindow();
 			frame.setVisible(true);
-			container.start();
+			canvasPanel.start();
 		} catch (SlickException ex) {
 			ex.printStackTrace();
 		}

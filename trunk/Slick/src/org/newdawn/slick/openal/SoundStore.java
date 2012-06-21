@@ -78,10 +78,19 @@ public class SoundStore {
 	private SoundStore() {
 	}
 	
+	
 	/**
-	 * Clear out the sound store contents
+	 * Deletes any sources and clears out the sound store contents
 	 */
 	public void clear() {
+		if (sources!=null && AL.isCreated()) {
+			for (int i=0;i<sourceCount;i++) {
+				int src = sources.get(i);
+				AL10.alSourcei(src, AL10.AL_BUFFER, 0);
+				AL10.alSourceStop(src);
+				AL10.alDeleteSources(src);
+			}
+		}
 		store = new SoundStore();
 	}
 
