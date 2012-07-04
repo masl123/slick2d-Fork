@@ -234,7 +234,7 @@ public class TiledMapPlus extends TiledMap {
 
 			Element map = doc.createElement("map");
 			map.setAttribute("version", "1.0");
-			if(this.orientation == TiledMap.ORTHOGONAL) map.setAttribute("orientation", "orthoganal");
+			if(this.orientation == TiledMap.ORTHOGONAL) map.setAttribute("orientation", "orthogonal");
 			else if(this.orientation == TiledMap.ISOMETRIC) map.setAttribute("orientation", "isometric"); 
 			map.setAttribute("tilewidth", "" + this.tileWidth);
 			map.setAttribute("tileheight", "" + this.tileHeight);
