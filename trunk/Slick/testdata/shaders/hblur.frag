@@ -1,7 +1,8 @@
+#version 120
+
 uniform sampler2D tex0;
 uniform float resolution;
 uniform float radius;
-uniform float alpha;
 
 void main() {
 	vec4 sum = vec4(0.0);
@@ -20,5 +21,5 @@ void main() {
 	sum += texture2D(tex0, vec2(tc.x + 3.0*blur, tc.y)) * 0.09;
 	sum += texture2D(tex0, vec2(tc.x + 4.0*blur, tc.y)) * 0.05;
 
-	gl_FragColor = vec4(sum.rgb, alpha);
+	gl_FragColor = vec4(sum.rgba);
 }
