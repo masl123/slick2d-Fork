@@ -1,5 +1,6 @@
 package org.newdawn.slick.tests;
 
+import org.lwjgl.input.Keyboard;
 import org.newdawn.slick.AngelCodeFont;
 import org.newdawn.slick.AppGameContainer;
 import org.newdawn.slick.BasicGame;
@@ -62,12 +63,14 @@ public class GUITest extends BasicGame implements ComponentListener {
 			public void componentActivated(AbstractComponent source) {
 				message = "Entered1: "+field.getText();
 				field2.setFocus(true);
+				System.out.println(message);
 			}
 		});
 		field2 = new TextField(container, font, 150,70,500,35,new ComponentListener() {
 			public void componentActivated(AbstractComponent source) {
 				message = "Entered2: "+field2.getText();
 				field.setFocus(true);
+				System.out.println(message);
 			}
 		});
 		field2.setBorderColor(Color.red);
@@ -83,6 +86,7 @@ public class GUITest extends BasicGame implements ComponentListener {
 			areas[i].setNormalColor(new Color(1,1,1,0.8f));
 			areas[i].setMouseOverColor(new Color(1,1,1,0.9f));
 		}
+		field.setFocus(true);
 	}
 
 	/**
