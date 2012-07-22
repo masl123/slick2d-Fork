@@ -377,7 +377,7 @@ public class AngelCodeFont implements Font {
 	/**
 	 * @see org.newdawn.slick.Font#drawString(float, float, java.lang.String)
 	 */
-	public void drawString(float x, float y, String text) {
+	public void drawString(float x, float y, CharSequence text) {
 		drawString(x, y, text, Color.white);
 	}
 
@@ -385,14 +385,14 @@ public class AngelCodeFont implements Font {
 	 * @see org.newdawn.slick.Font#drawString(float, float, java.lang.String,
 	 *      org.newdawn.slick.Color)
 	 */
-	public void drawString(float x, float y, String text, Color col) {
+	public void drawString(float x, float y, CharSequence text, Color col) {
 		drawString(x, y, text, col, 0, text.length() - 1);
 	}
 
 	/**
 	 * @see Font#drawString(float, float, String, Color, int, int)
 	 */
-	public void drawString(float x, float y, String text, Color col,
+	public void drawString(float x, float y, CharSequence text, Color col,
 			int startIndex, int endIndex) {
 		fontImage.bind();
 		col.bind();
@@ -433,14 +433,14 @@ public class AngelCodeFont implements Font {
 	 * @param start The index of the first character in the string to render
 	 * @param end The index of the last character in the string to render
 	 */
-	private void render(String text, int start, int end) {
+	private void render(CharSequence text, int start, int end) {
 		GL.glBegin(SGL.GL_QUADS);
 
 		int x = 0, y = 0;
 		Glyph lastCharDef = null;
-		char[] data = text.toCharArray();
-		for (int i = 0; i < data.length; i++) {
-			char id = data[i];
+		
+		for (int i = 0; i < text.length(); i++) {
+			char id = text.charAt(i);
 			if (id == '\n') {
 				x = 0;
 				y += getLineHeight();
@@ -501,7 +501,7 @@ public class AngelCodeFont implements Font {
 	/**
 	 * @see org.newdawn.slick.Font#getHeight(java.lang.String)
 	 */
-	public int getHeight(String text) {
+	public int getHeight(CharSequence text) {
 		DisplayList displayList = null;
 		if (displayListCaching) {
 			displayList = (DisplayList)displayLists.get(text);
@@ -540,7 +540,7 @@ public class AngelCodeFont implements Font {
 	/**
 	 * @see org.newdawn.slick.Font#getWidth(java.lang.String)
 	 */
-	public int getWidth(String text) {
+	public int getWidth(CharSequence text) {
 		DisplayList displayList = null;
 		if (displayListCaching) {
 			displayList = (DisplayList)displayLists.get(text);
@@ -720,6 +720,6 @@ public class AngelCodeFont implements Font {
 		/** The height of the line rendered */
 		Short height;
 		/** The text that the display list holds */
-		String text;
+		CharSequence text;
 	}
 }
