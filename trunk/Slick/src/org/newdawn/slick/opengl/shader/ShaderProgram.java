@@ -413,12 +413,12 @@ public class ShaderProgram {
 	
 	private void fetchAttributes() {
 		int len = ARBShaderObjects.glGetObjectParameteriARB(program, GL20.GL_ACTIVE_ATTRIBUTES);
-		//max length of all uniforms stored in program
+		//max length of all attributes stored in program
 		int strLen = ARBShaderObjects.glGetObjectParameteriARB(program, GL20.GL_ACTIVE_ATTRIBUTE_MAX_LENGTH); 
 		for (int i=0; i<len; i++) {
 			String name = ARBVertexShader.glGetActiveAttribARB(program, i, strLen);
 			int id = ARBVertexShader.glGetAttribLocationARB(program, name);
-			uniforms.put(name, id);
+			attributes.put(name, id);
 		}
 	}
 
