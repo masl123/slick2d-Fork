@@ -42,8 +42,12 @@ public class TiledMap {
 	 * @param h
 	 *            True if we're running on a headless system
 	 */
-	private static void setHeadless(boolean h) {
+	public static void setHeadless(boolean h) {
 		headless = h;
+	}
+	
+	public static boolean isHeadless() {
+		return headless;
 	}
 
 	/** The width of the map */
