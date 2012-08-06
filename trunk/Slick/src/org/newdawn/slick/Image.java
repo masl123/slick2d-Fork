@@ -209,6 +209,18 @@ public class Image implements Renderable {
 		this(ref, false, FILTER_LINEAR, trans);
 	}
 
+
+	/**
+	 * Create an image based on a file at the specified location
+	 * 
+	 * @param ref The location of the image file to load
+	 * @param filter the filtering method to use when scaling this image
+	 * @throws SlickException Indicates a failure to load the image
+	 */
+	public Image(String ref, int filter) throws SlickException {
+		this(ref, false, filter);
+	}
+
 	/**
 	 * Create an image based on a file at the specified location
 	 * 
