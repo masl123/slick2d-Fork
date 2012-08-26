@@ -8,6 +8,7 @@ import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
+import org.newdawn.slick.gui.TextField;
 import org.newdawn.slick.state.BasicGameState;
 import org.newdawn.slick.state.StateBasedGame;
 import org.newdawn.slick.state.transition.FadeInTransition;
@@ -30,6 +31,8 @@ public class TestState2 extends BasicGameState {
 	/** The game holding this state */
 	private StateBasedGame game;
 	
+	private TextField username;
+	
 	/**
 	 * @see org.newdawn.slick.state.BasicGameState#getID()
 	 */
@@ -44,6 +47,14 @@ public class TestState2 extends BasicGameState {
 		this.game = game;
 		font = new AngelCodeFont("testdata/demo2.fnt","testdata/demo2.png");
 		image = new Image("testdata/logo.tga");
+		
+		username = new TextField(container, container.getDefaultFont(), 500, 500, 200, 20);
+		username.setBorderColor(Color.black);
+		username.setBackgroundColor(Color.white);
+		username.setTextColor(Color.black);
+		// username.setAcceptingInput(true);
+		// username.setCursorVisible(true);
+		// username.setText("Tree");
 	}
 
 	/**
@@ -54,8 +65,12 @@ public class TestState2 extends BasicGameState {
 		g.setColor(Color.green);
 		g.drawString("This is State 2", 200, 50);
 		
+
+		username.render(container, g);
+		
 		g.rotate(400,300,ang);
 		g.drawImage(image,400-(image.getWidth()/2),300-(image.getHeight()/2));
+		
 	}
 
 	/**

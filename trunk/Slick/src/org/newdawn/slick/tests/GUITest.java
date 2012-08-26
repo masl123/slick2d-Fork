@@ -1,6 +1,9 @@
 package org.newdawn.slick.tests;
 
-import org.lwjgl.input.Keyboard;
+import java.awt.event.KeyEvent;
+import java.lang.reflect.Field;
+import java.util.HashMap;
+
 import org.newdawn.slick.AngelCodeFont;
 import org.newdawn.slick.AppGameContainer;
 import org.newdawn.slick.BasicGame;
@@ -16,6 +19,7 @@ import org.newdawn.slick.gui.ComponentListener;
 import org.newdawn.slick.gui.MouseOverArea;
 import org.newdawn.slick.gui.TextField;
 import org.newdawn.slick.util.Log;
+
 
 /**
  * A test for the GUI components available in Slick. Very simple stuff
@@ -132,12 +136,14 @@ public class GUITest extends BasicGame implements ComponentListener {
 		}
 	}
 	
+	
+	
 	/**
 	 * Entry point to our test
 	 * 
 	 * @param argv The arguments passed to the test
 	 */
-	public static void main(String[] argv) {
+	public static void main(String[] argv) throws Exception {
 		try {
 			AppGameContainer container = new AppGameContainer(new GUITest());
 			container.setDisplayMode(800,600,false);

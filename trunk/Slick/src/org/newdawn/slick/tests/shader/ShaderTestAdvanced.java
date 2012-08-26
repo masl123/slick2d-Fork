@@ -37,6 +37,10 @@ public class ShaderTestAdvanced extends BasicGame {
 	private Image postImageA, postImageB;
 	private Graphics postGraphicsA, postGraphicsB;
 	
+	
+	
+	
+	
 	@Override
 	public void init(GameContainer container) throws SlickException {
 		this.container = container;
