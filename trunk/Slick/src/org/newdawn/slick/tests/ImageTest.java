@@ -96,6 +96,7 @@ public class ImageTest extends BasicGame {
         rotImage.draw(100, 200, 0.25f);
         rotImage.draw(10, 300, 2f);
         
+        
 	}
 
 	/**

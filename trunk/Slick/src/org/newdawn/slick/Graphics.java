@@ -322,7 +322,7 @@ public class Graphics {
 		predraw();
 		GL.glClear(SGL.GL_COLOR_BUFFER_BIT);
 		postdraw();
-	}
+	} 
 	
 	/**
 	 * Reset the transformation on this graphics context

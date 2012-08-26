@@ -10,7 +10,11 @@
 	<classpathentry exported="true" kind="lib" path="lib/jnlp.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/tinylinepp.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry exported="true" kind="lib" path="lib/lwjgl.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lwjgl.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="Slick1/native/macosx"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry exported="true" kind="lib" path="lib/lwjgl_util_applet.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

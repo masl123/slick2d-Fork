@@ -105,6 +105,7 @@
 		<fileset dir="${build.dir}/classes">
 			<include name="org/newdawn/slick/opengl/*.class"/>
 			<include name="org/newdawn/slick/opengl/renderer/*.class"/>
+			<include name="org/newdawn/slick/opengl/shader/*.class"/>
 			<include name="org/newdawn/slick/openal/*.class"/>
 			<include name="org/newdawn/slick/util/ResourceLoader.class"/>
 			<include name="org/newdawn/slick/util/*Location.class"/>
@@ -115,6 +116,7 @@
 			<include name="org/newdawn/slick/Font.class"/>
 			<include name="org/newdawn/slick/Color.class"/>
 			<include name="org/newdawn/slick/TrueTypeFont*.class"/>
+			<include name="org/newdawn/slick/UnicodeFont*.class"/>
 			<include name="org/newdawn/slick/util/BufferedImageUtil.class"/>
 			<include name="org/newdawn/slick/util/LogSystem.class"/>
 			<include name="org/newdawn/slick/util/DefaultLogSystem.class"/> 
@@ -125,6 +127,7 @@
 		<fileset dir="src">
 			<include name="org/newdawn/slick/opengl/*.java"/>
 			<include name="org/newdawn/slick/opengl/renderer/*.java"/>
+			<include name="org/newdawn/slick/opengl/shader/*.java"/>
 			<include name="org/newdawn/slick/openal/*.java"/>
 			<include name="org/newdawn/slick/util/ResourceLoader.java"/>
 			<include name="org/newdawn/slick/util/*Location.java"/>
@@ -135,6 +138,7 @@
 			<include name="org/newdawn/slick/Font.java"/>
 			<include name="org/newdawn/slick/Color.java"/>
 			<include name="org/newdawn/slick/TrueTypeFont.java"/>
+			<include name="org/newdawn/slick/UnicodeFont.java"/>
 			<include name="org/newdawn/slick/util/BufferedImageUtil.java"/>
 			<include name="org/newdawn/slick/util/LogSystem.class"/>
 			<include name="org/newdawn/slick/util/DefaultLogSystem.class"/> 

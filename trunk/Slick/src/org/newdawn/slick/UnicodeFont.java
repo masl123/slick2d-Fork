@@ -337,6 +337,7 @@ public class UnicodeFont implements org.newdawn.slick.Font {
 	 * @throws SlickException if the glyphs could not be loaded.
 	 */
 	public boolean loadGlyphs (int maxGlyphsToLoad) throws SlickException {
+		System.out.println("loading glyphs "+maxGlyphsToLoad);
 		if (queuedGlyphs.isEmpty()) return false;
 
 		if (effects.isEmpty())
@@ -379,7 +380,7 @@ public class UnicodeFont implements org.newdawn.slick.Font {
 			maxGlyphsToLoad -= glyphPage.loadGlyphs(queuedGlyphs, maxGlyphsToLoad);
 			if (maxGlyphsToLoad == 0) return true;
 		}
-
+		System.out.println("glyphs loaded");
 		return true;
 	}
 

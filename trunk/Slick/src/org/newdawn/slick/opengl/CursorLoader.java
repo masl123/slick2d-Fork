@@ -111,8 +111,8 @@ public class CursorLoader {
 		imageData = ImageDataFactory.getImageDataFor(ref);
 		imageData.configureEdging(false);
 
-        imageData.loadImage(ResourceLoader.getResourceAsStream(ref), true, true, null);
-        return getCursor(imageData, x, y);
+        ByteBuffer buff = imageData.loadImage(ResourceLoader.getResourceAsStream(ref), true, true, null);
+        return getCursor(buff, x, y, imageData.getWidth(), imageData.getHeight());
 	}
 
 	/**
