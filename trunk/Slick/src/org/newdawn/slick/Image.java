@@ -681,7 +681,7 @@ public class Image implements Renderable {
 		if (corners == null) {
 			GL.glTexCoord2f(tx, ty);
 			GL.glVertex3f(x+x1, y+y1, 0);
-			GL.glTexCoord2f(tx, ty + tw);
+			GL.glTexCoord2f(tx, ty + th);
 			GL.glVertex3f(x+x2, y+y2, 0);
 			GL.glTexCoord2f(tx + tw, ty + th);
 			GL.glVertex3f(x+x3, y+y3, 0);
