@@ -21,11 +21,11 @@ import java.util.Map.Entry;
 import org.newdawn.slick.font.Glyph;
 import org.newdawn.slick.font.GlyphPage;
 import org.newdawn.slick.font.HieroSettings;
+import org.newdawn.slick.font.effects.Effect;
 import org.newdawn.slick.opengl.Texture;
 import org.newdawn.slick.opengl.TextureImpl;
 import org.newdawn.slick.opengl.renderer.Renderer;
 import org.newdawn.slick.opengl.renderer.SGL;
-import org.newdawn.slick.util.Log;
 import org.newdawn.slick.util.ResourceLoader;
 
 /**
@@ -91,11 +91,11 @@ public class UnicodeFont implements org.newdawn.slick.Font {
 	/** The glyphs that are available in this font */
 	private final Glyph[][] glyphs = new Glyph[PAGES][];
 	/** The pages that have been loaded for this font */
-	private final List glyphPages = new ArrayList();
+	private final List<GlyphPage> glyphPages = new ArrayList<GlyphPage>();
 	/** The glyphs queued up to be rendered */
-	private final List queuedGlyphs = new ArrayList(256);
+	private final List<Glyph> queuedGlyphs = new ArrayList<Glyph>(256);
 	/** The effects that need to be applied to the font */
-	private final List effects = new ArrayList();
+	private final List<Effect> effects = new ArrayList<Effect>();
 	
 	/** The padding applied in pixels to the top of the glyph rendered area */
 	private int paddingTop;
@@ -301,11 +301,11 @@ public class UnicodeFont implements org.newdawn.slick.Font {
 	}
 
 	/**
-	 * Queues the glyphs in the ASCII character set (codepoints 32 through 255) to be loaded. Note that the glyphs are not actually
+	 * Queues the glyphs in the ASCII character set (codepoints 32 through 127) to be loaded. Note that the glyphs are not actually
 	 * loaded until {@link #loadGlyphs()} is called.
 	 */
 	public void addAsciiGlyphs () {
-		addGlyphs(32, 255);
+		addGlyphs(32, 127);
 	}
 
 	/**
@@ -337,7 +337,6 @@ public class UnicodeFont implements org.newdawn.slick.Font {
 	 * @throws SlickException if the glyphs could not be loaded.
 	 */
 	public boolean loadGlyphs (int maxGlyphsToLoad) throws SlickException {
-		System.out.println("loading glyphs "+maxGlyphsToLoad);
 		if (queuedGlyphs.isEmpty()) return false;
 
 		if (effects.isEmpty())

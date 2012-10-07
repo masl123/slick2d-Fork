@@ -44,11 +44,12 @@ public class UnicodeFontTest extends BasicGame {
 //		unicodeFont.setPaddingAdvanceX(-10);
 //		unicodeFont.getEffects().add(new ShadowEffect(java.awt.Color.black, 5, 5, 0.5f));
 		unicodeFont.getEffects().add(new ColorEffect(java.awt.Color.white));
-
+		
 		// unicodeFont = new UnicodeFont("Arial", 25, false, false);
 		// unicodeFont = new UnicodeFont("Everson Mono", 44, false, false);
 
-		// font.addGlyphs(0, 255);
+		// NOTE: Mac has a (Java2D?) bug that slows rendering town to ~3.5-4 seconds to load glyphs 128-255
+//		 font.addGlyphs(0, 127);
 		// font.addGlyphs("~!@#$%^&*()");
 
 //		long l = System.currentTimeMillis();
@@ -84,7 +85,7 @@ public class UnicodeFontTest extends BasicGame {
 	 * @see org.newdawn.slick.BasicGame#update(org.newdawn.slick.GameContainer, int)
 	 */
 	public void update (GameContainer container, int delta) throws SlickException {
-		unicodeFont.loadGlyphs(1);
+		unicodeFont.loadGlyphs(2);
 	}
 
 	/**
