@@ -44,11 +44,11 @@ public class UnicodeFontTest extends BasicGame {
 //		unicodeFont.setPaddingAdvanceX(-10);
 //		unicodeFont.getEffects().add(new ShadowEffect(java.awt.Color.black, 5, 5, 0.5f));
 		unicodeFont.getEffects().add(new ColorEffect(java.awt.Color.white));
-		
+
 		// unicodeFont = new UnicodeFont("Arial", 25, false, false);
 		// unicodeFont = new UnicodeFont("Everson Mono", 44, false, false);
 
-		// NOTE: Mac has a (Java2D?) bug that slows rendering town to ~3.5-4 seconds to load glyphs 128-255
+		//NOTE: code points larger than 127 will significantly slow down loading on some Macs
 //		 font.addGlyphs(0, 127);
 		// font.addGlyphs("~!@#$%^&*()");
 

@@ -311,7 +311,10 @@ public class UnicodeFont implements org.newdawn.slick.Font {
 	/**
 	 * Queues the glyphs in the NEHE character set (codepoints 32 through 128) to be loaded. Note that the glyphs are not actually
 	 * loaded until {@link #loadGlyphs()} is called.
+	 * 
+	 * @deprecated Use addAsciiGlyphs() (codepoints 32-127) or addGlyphs(int, int) for something more specific
 	 */
+	@Deprecated
 	public void addNeheGlyphs () {
 		addGlyphs(32, 32 + 96);
 	}
@@ -925,7 +928,7 @@ public class UnicodeFont implements org.newdawn.slick.Font {
 	 * 
 	 * @return The glyph pages that have been loaded into this font
 	 */
-	public List getGlyphPages () {
+	public List<GlyphPage> getGlyphPages () {
 		return glyphPages;
 	}
 
@@ -935,7 +938,7 @@ public class UnicodeFont implements org.newdawn.slick.Font {
 	 * 
 	 * @return The list of effects to be applied to the font
 	 */
-	public List getEffects () {
+	public List<Effect> getEffects () {
 		return effects;
 	}
 
