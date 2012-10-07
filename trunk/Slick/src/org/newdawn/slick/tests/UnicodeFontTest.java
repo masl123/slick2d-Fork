@@ -48,7 +48,8 @@ public class UnicodeFontTest extends BasicGame {
 		// unicodeFont = new UnicodeFont("Arial", 25, false, false);
 		// unicodeFont = new UnicodeFont("Everson Mono", 44, false, false);
 
-		// font.addGlyphs(0, 255);
+		//NOTE: code points larger than 127 will significantly slow down loading on some Macs
+//		 font.addGlyphs(0, 127);
 		// font.addGlyphs("~!@#$%^&*()");
 
 //		long l = System.currentTimeMillis();
@@ -84,7 +85,7 @@ public class UnicodeFontTest extends BasicGame {
 	 * @see org.newdawn.slick.BasicGame#update(org.newdawn.slick.GameContainer, int)
 	 */
 	public void update (GameContainer container, int delta) throws SlickException {
-		unicodeFont.loadGlyphs(1);
+		unicodeFont.loadGlyphs(2);
 	}
 
 	/**
