@@ -85,6 +85,7 @@ import org.newdawn.slick.font.HieroSettings;
 import org.newdawn.slick.font.effects.ColorEffect;
 import org.newdawn.slick.font.effects.ConfigurableEffect;
 import org.newdawn.slick.font.effects.ConfigurableEffect.Value;
+import org.newdawn.slick.font.effects.DistanceFieldEffect;
 import org.newdawn.slick.font.effects.EffectUtil;
 import org.newdawn.slick.font.effects.GradientEffect;
 import org.newdawn.slick.font.effects.OutlineEffect;
@@ -193,6 +194,7 @@ public class Hiero extends JFrame {
 		effectsListModel.addElement(new OutlineWobbleEffect());
 		effectsListModel.addElement(new OutlineZigzagEffect());
 		effectsListModel.addElement(new ShadowEffect());
+		effectsListModel.addElement(new DistanceFieldEffect());
 		new EffectPanel(colorEffect);
 
 		setVisible(true);
@@ -960,7 +962,7 @@ public class Hiero extends JFrame {
 					effectsList = new JList();
 					effectsScroll.setViewportView(effectsList);
 					effectsList.setModel(effectsListModel);
-					effectsList.setVisibleRowCount(6);
+					effectsList.setVisibleRowCount(7);
 					effectsScroll.setMinimumSize(effectsList.getPreferredScrollableViewportSize());
 				}
 			}
