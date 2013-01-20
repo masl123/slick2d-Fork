@@ -43,7 +43,7 @@ public abstract class Shape implements Serializable {
     }
     
     /**
-     * Set the location of this shape
+     * Set the top-left location of this shape
      * 
      * @param x The x coordinate of the new location of the shape
      * @param y The y coordinate of the new location of the shape
@@ -137,9 +137,18 @@ public abstract class Shape implements Serializable {
     }
     
     /**
-     * Set the location of this shape
+     * Get the top-left location of this shape.
+     *
+     * @return The coordinate of the top-left of this shape
+     */
+    public Vector2f getLocation() {
+        return new Vector2f(getX(), getY());
+    }
+
+    /**
+     * Set the top-left location of this shape
      * 
-     * @param loc The new location of the shape
+     * @param loc The new coordinate of the top-left of this shape
      */
     public void setLocation(Vector2f loc) {
     	setX(loc.x);
