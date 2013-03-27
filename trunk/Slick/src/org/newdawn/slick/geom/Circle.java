@@ -118,7 +118,7 @@ public strictfp class Circle extends Ellipse {
 	 */
     public boolean contains(float x, float y) 
     { 
-        return (x - getX()) * (x - getX()) + (y - getY()) * (y - getY()) < getRadius() * getRadius(); 
+        return (x - getCenterX()) * (x - getCenterX()) + (y - getCenterY()) * (y - getCenterY()) < getRadius() * getRadius();
     }
     
     /**
