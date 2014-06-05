@@ -492,39 +492,72 @@ public class AngelCodeFont implements Font {
 			displayList = (DisplayList)displayLists.get(text);
 			if (displayList != null && displayList.width != null) return displayList.width.intValue();
 		}
-		
-		int maxWidth = 0;
-		int width = 0;
-		CharDef lastCharDef = null;
-		for (int i = 0, n = text.length(); i < n; i++) {
-			int id = text.charAt(i);
-			if (id == '\n') {
-				width = 0;
-				continue;
-			}
-			if (id >= chars.length) {
-				continue;
-			}
-			CharDef charDef = chars[id];
-			if (charDef == null) {
-				continue;
-			}
 
-			if (lastCharDef != null) width += lastCharDef.getKerning(id);
-			lastCharDef = charDef;
-
-			if (i < n - 1) {
-				width += charDef.xadvance;
-			} else {
-				width += charDef.width;
-			}
-			maxWidth = Math.max(maxWidth, width);
-		}
+        int maxWidth = findWidth(text,false);
 		
 		if (displayList != null) displayList.width = new Short((short)maxWidth);
 		
 		return maxWidth;
 	}
+
+    /**
+     * @param text the string to find the width of
+     * @param logical whether to add the space the letters should occupy on the end
+     * @return width of string.
+     */
+    private int findWidth(String text,boolean logical) {
+        int maxWidth = 0;
+        int width = 0;
+        CharDef lastCharDef = null;
+        for (int i = 0, n = text.length(); i < n; i++) {
+            int id = text.charAt(i);
+            if (id == '\n') {
+                width = 0;
+                continue;
+            }
+            if (id >= chars.length) {
+                continue;
+            }
+            CharDef charDef = chars[id];
+            if (charDef == null) {
+                continue;
+            }
+
+            if (lastCharDef != null) width += lastCharDef.getKerning(id);
+            lastCharDef = charDef;
+
+            if (i < n - 1 || logical) {
+                width += charDef.xadvance;
+            } else {
+                width += charDef.width;
+            }
+            maxWidth = Math.max(maxWidth, width);
+        }
+        return maxWidth;
+    }
+
+
+    /**
+     *
+     * @see org.newdawn.slick.Font#getLogicalWidth(String)
+     */
+    public int getLogicalWidth(String text) {
+        DisplayList displayList = null;
+        if (displayListCaching) {
+            displayList = (DisplayList)displayLists.get(text);
+            if (displayList != null && displayList.logicalWidth != null) return displayList.logicalWidth.intValue();
+        }
+
+        int maxWidth = findWidth(text,true);
+
+        if (displayList != null) displayList.logicalWidth = new Short((short)maxWidth);
+
+        return maxWidth;
+    }
+
+
+
+
 
 	/**
 	 * The definition of a single character as defined in the AngelCode file
@@ -627,6 +660,8 @@ public class AngelCodeFont implements Font {
 		Short yOffset;
 		/** The width of the line rendered */
 		Short width;
+        /** The logical width of the line rendered */
+        Short logicalWidth;
 		/** The height of the line rendered */
 		Short height;
 		/** The text that the display list holds */

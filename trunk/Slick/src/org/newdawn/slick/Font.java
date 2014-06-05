@@ -14,7 +14,20 @@ public interface Font {
 	 * @return The width of the given string
 	 */
 	public abstract int getWidth(String str);
-	
+
+    /**
+     *
+     * Get the logical width of the given string, meaning the space the string should occupy
+     * if written on a line with strings around it.
+     * This differs from the {@link #getWidth(String)} getWidth} which gets the visual width.
+     * Logical width is very useful for placing text in relation to other pieces of text.
+     *
+     * @param str the string to obtain the logical width of
+     * @return the width the given string will occupy
+     */
+    public abstract int getLogicalWidth(String str);
+
+
 	/**
 	 * Get the height of the given string
 	 * 
