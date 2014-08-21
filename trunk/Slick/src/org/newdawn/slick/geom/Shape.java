@@ -74,6 +74,7 @@ public abstract class Shape implements Serializable {
      * @return The x location of the left side of this shape.
      */
     public float getX() {
+        checkPoints();
         return x;
     }
     
@@ -133,6 +134,7 @@ public abstract class Shape implements Serializable {
      * @return The y position of the top of this shape.
      */
     public float getY() {
+        checkPoints();
         return y;
     }
     
@@ -670,6 +672,8 @@ public abstract class Shape implements Serializable {
 	            	minX = Math.min(points[i*2],minX);
 	            	minY = Math.min(points[(i*2)+1],minY);
 	            }
+		        x = minX;
+		        y = minY;
             }
             pointsDirty = false;
             trianglesDirty = true;
