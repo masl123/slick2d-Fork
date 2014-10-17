@@ -108,8 +108,17 @@ public class GroupObject {
 
 		else if (objectType == ObjectType.RECTANGLE) {
 			objectType = ObjectType.RECTANGLE;
-			width = Integer.parseInt(element.getAttribute("width"));
-			height = Integer.parseInt(element.getAttribute("height"));
+			try {
+				width = Integer.parseInt(element.getAttribute("width"));
+			catch (NumberFormatException e) {
+				width = 0
+			}
+			
+			try {
+				height = Integer.parseInt(element.getAttribute("height"));
+			catch (NumberFormatException e) {
+				height = 0
+			}
 			name = element.getAttribute("name");
 			type = element.getAttribute("type");
 		}
