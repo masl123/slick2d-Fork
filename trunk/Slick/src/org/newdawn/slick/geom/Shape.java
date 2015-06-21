@@ -328,7 +328,7 @@ public abstract class Shape implements Serializable {
      * within this one.
      */
     public boolean contains(Shape other) {
-    	if (other.intersects(this)) {
+    	if (!other.intersects(this)) {
     		return false;
     	}
     	
