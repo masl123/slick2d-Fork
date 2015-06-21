@@ -480,8 +480,9 @@ public class UnicodeFont implements org.newdawn.slick.Font {
 		char[] chars = text.substring(0, endIndex).toCharArray();
 		GlyphVector vector = font.layoutGlyphVector(GlyphPage.renderContext, chars, 0, chars.length, Font.LAYOUT_LEFT_TO_RIGHT);
 
-		int maxWidth = 0, totalHeight = 0, lines = 0;
+		int maxWidth = 0, maxLogicWidth = 0, totalHeight = 0, lines = 0;
 		int extraX = 0, extraY = ascent;
+        int extraXLogic = 0;
 		boolean startNewLine = false;
 		Texture lastBind = null;
 		for (int glyphIndex = 0, n = vector.getNumGlyphs(); glyphIndex < n; glyphIndex++) {
@@ -492,10 +493,12 @@ public class UnicodeFont implements org.newdawn.slick.Font {
 			int codePoint = text.codePointAt(charIndex);
 
 			Rectangle bounds = getGlyphBounds(vector, glyphIndex, codePoint);
+            Rectangle boundsLogic = vector.getLogicalBounds().getBounds();
 			Glyph glyph = getGlyph(vector.getGlyphCode(glyphIndex), codePoint, bounds, vector, glyphIndex);
 
 			if (startNewLine && codePoint != '\n') {
 				extraX = -bounds.x;
+                extraXLogic = -boundsLogic.x;
 				startNewLine = false;
 			}
 
@@ -518,7 +521,9 @@ public class UnicodeFont implements org.newdawn.slick.Font {
 
 			if (glyphIndex >= 0) extraX += paddingRight + paddingLeft + paddingAdvanceX;
 			maxWidth = Math.max(maxWidth, bounds.x + extraX + bounds.width);
-			totalHeight = Math.max(totalHeight, ascent + bounds.y + bounds.height);
+            maxLogicWidth = Math.max(maxLogicWidth, boundsLogic.x + extraX + boundsLogic.width);
+            totalHeight = Math.max(totalHeight, ascent + bounds.y + bounds.height);
+
 
 			if (codePoint == '\n') {
 				startNewLine = true; // Mac gives -1 for bounds.x of '\n', so use the bounds.x of the next glyph.
@@ -538,6 +543,7 @@ public class UnicodeFont implements org.newdawn.slick.Font {
 		GL.glTranslatef(-x, -y, 0);
 
 		if (displayList == null) displayList = new DisplayList();
+        displayList.logicalWidth = (short)maxLogicWidth;
 		displayList.width = (short)maxWidth;
 		displayList.height = (short)(lines * getLineHeight() + totalHeight);
 		return displayList;
@@ -622,27 +628,57 @@ public class UnicodeFont implements org.newdawn.slick.Font {
 			if (displayList != null) return displayList.width;
 		}
 
-		char[] chars = text.toCharArray();
-		GlyphVector vector = font.layoutGlyphVector(GlyphPage.renderContext, chars, 0, chars.length, Font.LAYOUT_LEFT_TO_RIGHT);
-
-		int width = 0;
-		int extraX = 0;
-		boolean startNewLine = false;
-		for (int glyphIndex = 0, n = vector.getNumGlyphs(); glyphIndex < n; glyphIndex++) {
-			int charIndex = vector.getGlyphCharIndex(glyphIndex);
-			int codePoint = text.codePointAt(charIndex);
-			Rectangle bounds = getGlyphBounds(vector, glyphIndex, codePoint);
-
-			if (startNewLine && codePoint != '\n') extraX = -bounds.x;
-
-			if (glyphIndex > 0) extraX += paddingLeft + paddingRight + paddingAdvanceX;
-			width = Math.max(width, bounds.x + extraX + bounds.width);
-
-			if (codePoint == '\n') startNewLine = true;
-		}
+        int width = findWidth(text,false);
 
 		return width;
 	}
+
+    /**
+     * @param text the string to find the width of
+     * @param logical whether to add the space the letters should occupy on the end
+     * @return width of string.
+     */
+    private int findWidth(String text,boolean logical) {
+        char[] chars = text.toCharArray();
+        GlyphVector vector = font.layoutGlyphVector(GlyphPage.renderContext, chars, 0, chars.length, Font.LAYOUT_LEFT_TO_RIGHT);
+
+        int width = 0;
+        int extraX = 0;
+        boolean startNewLine = false;
+        for (int glyphIndex = 0, n = vector.getNumGlyphs(); glyphIndex < n; glyphIndex++) {
+            int charIndex = vector.getGlyphCharIndex(glyphIndex);
+            int codePoint = text.codePointAt(charIndex);
+
+            Rectangle bounds = logical ? vector.getLogicalBounds().getBounds() : getGlyphBounds(vector, glyphIndex, codePoint);
+
+            if (startNewLine && codePoint != '\n') extraX = -bounds.x;
+
+            if (glyphIndex > 0) extraX += paddingLeft + paddingRight + paddingAdvanceX;
+            width = Math.max(width, bounds.x + extraX + bounds.width);
+
+            if (codePoint == '\n') startNewLine = true;
+        }
+        return width;
+    }
+
+
+    /**
+     * @see org.newdawn.slick.Font#getLogicalWidth(String)
+     */
+    public int getLogicalWidth(String text) {
+        if (text == null) throw new IllegalArgumentException("text cannot be null.");
+        if (text.length() == 0) return 0;
+
+        if (displayListCaching) {
+            DisplayList displayList = (DisplayList)displayLists.get(text);
+            if (displayList != null) return displayList.logicalWidth;
+        }
+
+        int width = findWidth(text,true);
+
+        return width;
+    }
+
 
 	/**
 	 * @see org.newdawn.slick.Font#getHeight(java.lang.String)
@@ -969,6 +1005,8 @@ public class UnicodeFont implements org.newdawn.slick.Font {
 
 		/** The width of rendered text in the list */
 		public short width;
+        /** The logical width of the text in the list */
+        public short logicalWidth;
 		/** The height of the rendered text in the list */
 		public short height;
 		/** Application data stored in the list */

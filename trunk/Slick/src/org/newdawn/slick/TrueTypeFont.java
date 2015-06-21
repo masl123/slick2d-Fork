@@ -311,6 +311,14 @@ public class TrueTypeFont implements org.newdawn.slick.Font {
 		return totalwidth;
 	}
 
+    /**
+     * In this case equal to {@link org.newdawn.slick.Font#getLogicalWidth(String)}
+     * @see org.newdawn.slick.Font#getLogicalWidth(String)
+     */
+    public int getLogicalWidth(String str) {
+        return getWidth(str);
+    }
+
 	/**
 	 * Get the font's height
 	 * 
