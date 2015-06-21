@@ -27,7 +27,7 @@ public class FileChooser {
 	private Page page;
 	/** True if the GUI is visible */
 	private boolean visible = false;
-	/** The file system view used to safely interegate the file system */
+	/** The file system view used to safely integrate the file system */
 	private FileSystemView view = FileSystemView.getFileSystemView();
 	/** The directory the file chooser is pointing at */
 	private File currentDir = view.getDefaultDirectory();
@@ -77,6 +77,7 @@ public class FileChooser {
 	 */
 	public FileChooser(String title, String select, File currentDir, FileChooserListener listener) throws ThingleException {
 		this.listener = listener;
+		this.select = select;
 		this.title = title;
 		this.currentDir = currentDir;
 		
