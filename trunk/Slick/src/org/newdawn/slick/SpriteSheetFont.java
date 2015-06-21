@@ -102,6 +102,12 @@ public class SpriteSheetFont implements Font {
 		return charWidth * text.length();
 	}
 
+    /**
+     * In this case equal to {@link org.newdawn.slick.Font#getLogicalWidth(String)}
+     * @see org.newdawn.slick.Font#getLogicalWidth(String)
+     */
+    public int getLogicalWidth(String str) {return getWidth(str);}
+
 	/**
 	 * @see org.newdawn.slick.Font#getLineHeight()
 	 */

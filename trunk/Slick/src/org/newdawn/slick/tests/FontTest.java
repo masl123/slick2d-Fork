@@ -23,7 +23,10 @@ public class FontTest extends BasicGame {
 	private AngelCodeFont font2;
 	/** The image of the font to compare against */
 	private Image image;
-	
+
+    /** Font to test width of text**/
+    private AngelCodeFont widthFont;
+
 	/**
 	 * Create a new test for font rendering
 	 */
@@ -38,6 +41,7 @@ public class FontTest extends BasicGame {
 		font = new AngelCodeFont("testdata/demo2.fnt","testdata/demo2_00.tga");
 		font2 = new AngelCodeFont("testdata/hiero.fnt","testdata/hiero.png");
 		image = new Image("testdata/demo2_00.tga", false);
+        widthFont = new AngelCodeFont("testdata/courier14_h2.fnt","testdata/courier14_h2.png",true);
 	}
 
 	/**
@@ -62,6 +66,12 @@ public class FontTest extends BasicGame {
 		font.drawString(500, 300, testStr);
 		g.setColor(Color.white);
 		g.drawRect(500,300+font.getYOffset(testStr),font.getWidth(testStr),font.getHeight(testStr)-font.getYOffset(testStr));
+
+        g.setColor(Color.red);
+        widthFont.drawString(400,400,"width comparison, ,");
+        g.drawRect(400,400,widthFont.getLogicalWidth("width comparison, ,"),widthFont.getLineHeight());
+        g.setColor(Color.green);
+        g.drawRect(400,400,widthFont.getWidth("width comparison, ,"),widthFont.getLineHeight());
 	}
 
 	/**

@@ -1,6 +1,7 @@
 
 package org.newdawn.slick.tests;
 
+import java.io.File;
 import java.io.IOException;
 
 import org.newdawn.slick.AppGameContainer;
@@ -37,13 +38,13 @@ public class UnicodeFontTest extends BasicGame {
 		container.setShowFPS(false);
 
 		// unicodeFont = new UnicodeFont(Font.decode("Arial Unicode MS"), 25, false, false);
-		unicodeFont = new UnicodeFont("c:/windows/fonts/arial.ttf", 48, false, false);
+		unicodeFont = new UnicodeFont("testdata/font.ttf", 48, false, false);
 //		unicodeFont.setPaddingBottom(10);
 //		unicodeFont.setPaddingRight(10);
 //		unicodeFont.setPaddingAdvanceX(-10);
 //		unicodeFont.getEffects().add(new ShadowEffect(java.awt.Color.black, 5, 5, 0.5f));
 		unicodeFont.getEffects().add(new ColorEffect(java.awt.Color.white));
-
+        unicodeFont.setDisplayListCaching(true);
 		// unicodeFont = new UnicodeFont("Arial", 25, false, false);
 		// unicodeFont = new UnicodeFont("Everson Mono", 44, false, false);
 
@@ -68,7 +69,17 @@ public class UnicodeFontTest extends BasicGame {
 		int yOffset = unicodeFont.getYOffset(text);
 		g.drawRect(10, 33 + yOffset, unicodeFont.getWidth(text), unicodeFont.getHeight(text) - yOffset);
 
-		// font.drawString(10, 73, "\u6880\u6881\u6882 (...) \u6883\u6884\u6885\u6886\u6887 hi?");
+
+        String tst = "width comparison, ,";
+        g.setFont(unicodeFont);
+        g.setColor(Color.green);
+        g.drawString(tst,10,300);
+        g.drawString(tst,10,350);
+        g.drawRect(10, 300, unicodeFont.getLogicalWidth(tst), unicodeFont.getLineHeight());
+        g.setColor(Color.red);
+        g.drawRect(10, 350, unicodeFont.getWidth(tst), unicodeFont.getLineHeight());
+
+        // font.drawString(10, 73, "\u6880\u6881\u6882 (...) \u6883\u6884\u6885\u6886\u6887 hi?");
 
 		unicodeFont.addGlyphs("~!@!#!#$%___--");
 		// Cypriot Syllabary glyphs (Everson Mono font): \uD802\uDC02\uD802\uDC03\uD802\uDC12 == 0x10802, 0x10803, s0x10812
